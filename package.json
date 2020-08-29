@@ -1,0 +1,9 @@
+{
+  "name": "fishy-online",
+  "version": "0.1.0",
+  "description": "MMO fish simulation game",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  }
+}

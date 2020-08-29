@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="css/main.css">
+	<title>socket game</title>
+</head>
+<body>
+<div style="display:none;">
+	<img id="orange_right" src="img/orange_right.png"/>
+	<img id="orange_left" src="img/orange_left.png"/>
+	<img id="blue_right" src="img/blue_right.png"/>
+	<img id="blue_left" src="img/blue_left.png"/>
+	<img id="green_right" src="img/green_right.png"/>
+	<img id="green_left" src="img/green_left.png"/>
+	<img id="purple_right" src="img/purple_right.png"/>
+	<img id="purple_left" src="img/purple_left.png"/>
+	<img id="black_right" src="img/black_right.png"/>
+	<img id="black_left" src="img/black_left.png"/>
+</div>
+
+<div id="splash">
+	<h1>Fishy ONLINE</h1>
+	<p>WASD or arrow keys to move</p>
+	<p>Eat smaller fish to get bigger and avoid larger fish or get eaten!</p>
+	<p>
+		<label for="name">My name is</label>
+		<input id="name" type="text" maxlength="12" max="12">
+	</p>
+	<p>
+		<label for="team">Pick a team</label>
+		<select id="team">
+			<option value="fish">Fish</option>
+			<option value="clam">Clam [Spectator Mode]</option>
+		</select>
+	</p>
+	<p>
+		<label for="color">Pick a color</label>
+		<select id="color">
+			<option value="random">random!</option>
+			<option value="orange">orange</option>
+			<option value="blue">blue</option>
+			<option value="purple">purple</option>
+			<option value="black">black</option>
+			<option value="green">green</option>
+		</select>
+	</p>
+	<p id="error" style="display:none;"></p>
+	<button type="button" id="start">START</button>
+</div>
+
+<canvas id="stage" width="1" height="1"></canvas>
+<div id="sidebar" style="display:none;">
+	<div>
+		<h3>Players: <span id="totalPlayers">0</span></h3>
+		<h4>Enemies: <span id="totalEnemies">0</span></h4>
+		<hr>
+		<div id="connectedPlayers"></div>
+	</div>
+</div>
+<div id="chatbar" style="display:none;">
+	<ul id="chatmessages"></ul>
+	<form id="chatinputbar">
+		<input id="chatinput" type="text" placeholder="enter your message here.." autocomplete="off"/>
+	</form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/Globals.js"></script>
+<script src="js/GameUI.js"></script>
+<script src="js/Networking.js"></script>
+<script src="js/Game.js"></script>
+
+<script type="text/javascript">
+	init();
+	GameUIJS.init();
+</script>
+</body>
+</html>

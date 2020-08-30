@@ -18,30 +18,103 @@ var player = {
 	veloMax: 10,
 	veloInc: 0.5,
 	veloDec: 0.2,
-	isLeft: false
+	isLeft: false,
+	fish: {
+        sizeX: 16,
+		sizeY: 8,
+		screenTop: 0
+    },
+    crab: {
+        sizeX: 32,
+		sizeY: 32,
+		screenTop: 500
+    },
+    clam: {
+        sizeX: 32,
+		sizeY: 32,
+		screenTop: 550
+    }
 };
 var players = {};
 
-var fishes = {
-	"orange": {
-		right: document.getElementById("orange_right"),
-		left: document.getElementById("orange_left"),
+var teams = {
+	fish: {
+		orange: {
+			right: document.getElementById("orange_right"),
+			left: document.getElementById("orange_left"),
+		},
+		blue: {
+			right: document.getElementById("blue_right"),
+			left: document.getElementById("blue_left"),
+		},
+		green: {
+			right: document.getElementById("green_right"),
+			left: document.getElementById("green_left"),
+		},
+		purple: {
+			right: document.getElementById("purple_right"),
+			left: document.getElementById("purple_left"),
+		},
+		black: {
+			right: document.getElementById("black_right"),
+			left: document.getElementById("black_left"),
+		},
+		red: {
+			right: document.getElementById("red_right"),
+			left: document.getElementById("red_left"),
+		}
 	},
-	"blue": {
-		right: document.getElementById("blue_right"),
-		left: document.getElementById("blue_left"),
+	crab: {
+		orange: {
+			right: document.getElementById("orange_crab"),
+			left: document.getElementById("orange_crab")
+		},
+		blue: {
+			right: document.getElementById("blue_crab"),
+			left: document.getElementById("blue_crab")
+		},
+		green: {
+			right: document.getElementById("green_crab"),
+			left: document.getElementById("green_crab")
+		},
+		purple: {
+			right: document.getElementById("purple_crab"),
+			left: document.getElementById("purple_crab")
+		},
+		black: {
+			right: document.getElementById("black_crab"),
+			left: document.getElementById("black_crab")
+		},
+		red: {
+			right: document.getElementById("red_crab"),
+			left: document.getElementById("red_crab")
+		}
 	},
-	"green": {
-		right: document.getElementById("green_right"),
-		left: document.getElementById("green_left"),
-	},
-	"purple": {
-		right: document.getElementById("purple_right"),
-		left: document.getElementById("purple_left"),
-	},
-	"black": {
-		right: document.getElementById("black_right"),
-		left: document.getElementById("black_left"),
+	clam: {
+		orange: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		},
+		blue: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		},
+		green: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		},
+		purple: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		},
+		black: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		},
+		red: {
+			right: document.getElementById("purple_clam"),
+			left: document.getElementById("purple_clam")
+		}
 	}
 };
 

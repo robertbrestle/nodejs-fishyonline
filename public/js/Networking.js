@@ -25,17 +25,13 @@ NetworkingJS = {
 			GameUIJS.updateConnectedPlayers();
 		});
 		socket.on('playerMoved', function(p) {
-			if(typeof p.id === 'undefined') {
-				console.log(JSON.stringify(p));
-			}else {
-				if(typeof players[p.id] !== 'undefined') {
-					players[p.id].x = p.player.x;
-					players[p.id].y = p.player.y;
-					players[p.id].isLeft = p.player.isLeft;
-					if(socket.id === p.id) {
-						player.x = p.player.x;
-						player.y = p.player.y;
-					}
+			if(typeof p.id !== 'undefined' && typeof players[p.id] !== 'undefined') {
+				players[p.id].x = p.player.x;
+				players[p.id].y = p.player.y;
+				players[p.id].isLeft = p.player.isLeft;
+				if(socket.id === p.id) {
+					player.x = p.player.x;
+					player.y = p.player.y;
 				}
 			}
 		});
@@ -50,20 +46,41 @@ NetworkingJS = {
 				players = po;
 
 				// update self
-				player.x = players[socket.id].x;
-				player.y = players[socket.id].y;
-				player.sizeX = players[socket.id].sizeX;
-				player.sizeY = players[socket.id].sizeY;
-				player.score = players[socket.id].score;
+				if(typeof players[socket.id] !== 'undefined') {
+					player.x = players[socket.id].x;
+					player.y = players[socket.id].y;
+					player.sizeX = players[socket.id].sizeX;
+					player.sizeY = players[socket.id].sizeY;
+					player.score = players[socket.id].score;
+				}
 
+				GameUIJS.updateConnectedPlayers();
+			}
+		});
+		socket.on('playerScore', function(ps) {
+			if(typeof ps.id !== 'undefined') {
+				players[ps.id] = ps.player;
+
+				// update self
+				if(socket.id === ps.id) {
+					player.sizeX = players[ps.id].sizeX;
+					player.sizeY = players[ps.id].sizeY;
+					player.score = players[ps.id].score;
+				}
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
 		socket.on('enemies', function(eo) {
 			enemies = eo;
 		});
+		socket.on('enemy', function(eo) {
+			enemies[eo.index] = eo.enemy;
+		});
 		socket.on('flakes', function(fo) {
 			flakes = fo;
+		});
+		socket.on('flake', function(fo) {
+			flakes[fo.index] = fo.flake;
 		});
 
 

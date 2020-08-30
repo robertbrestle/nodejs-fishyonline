@@ -157,6 +157,10 @@ function main() {
 
 // movement and collision
 function collision() {
+
+	if(player.team === 'clam') {
+		return;
+	}
 	
 	player.lastX = player.x;
 	player.lastY = player.y;
@@ -229,49 +233,13 @@ function collision() {
 	
 	
 	// handle Y offscreen
-	if(player.y < 0) {
+	if(player.y < player[player.team].screenTop) {
 		player.veloY = Math.abs(player.veloY) / 2;
-		player.y = 0;
+		player.y = player[player.team].screenTop;
 	}else if (player.y + (player.sizeY) > canvas.height) {
 		player.veloY = (Math.abs(player.veloY) / 2) * -1;
 		player.y = canvas.height - (player.sizeY);
 	}
-	
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	/*
-	for(var e = 0; e < enemies.length; e++) {
-		var ce = enemies[e];
-		if(ce.delay > 0) {
-			ce.delay--;
-		}else {
-			// move enemt
-			ce.x += ce.speed;
-			// if OOB
-			if((ce.speed > 0 && ce.x - ce.sizeX > canvas.width) ||
-			   (ce.speed < 0 && ce.x + ce.sizeX < 0)) {
-				   addEnemy(e);
-			}
-			// if collision with enemy
-			if(intersectPlayer(ce)) {
-				// player is larger, consume enemy
-			   if(player.sizeX > ce.sizeX) {
-					if(player.sizeX - ce.sizeX < 5) {
-						player.sizeX += 2;
-					}else {
-						player.sizeX++;
-					}
-				   player.sizeY = Math.floor(player.sizeX / 2);
-				   addEnemy(e);
-			   // enemy is larger, game over
-			   }else {
-				   player.eatenBy = ce.sizeX;
-				   //gameover = true;
-			   }
-			}
-		}
-	}
-	*/
 }// collision
 
 
@@ -284,20 +252,20 @@ function draw() {
 	//ctx.fillRect(0, 550, 700, 700);
 	
 	// draw player
-	ctx.drawImage(player.isLeft ? fishes[player.color].left : fishes[player.color].right, player.x, player.y, player.sizeX, player.sizeY);
+	ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
 	ctx.fillText(player.name, player.x + player.sizeX/2 - (player.name.length * 3) , player.y - 5);
 	
 	Object.keys(players).forEach(function(p) {
 		if(socket.id !== p) {
 			var v = players[p];
-			ctx.drawImage(v.isLeft ? fishes[v.color].left : fishes[v.color].right, v.x, v.y, v.sizeX, v.sizeY);
+			ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
 			ctx.fillText(v.name, v.x + v.sizeX/2 - (v.name.length * 3), v.y - 5);
 		}
 	});
 
 	enemies.forEach(function(e) {
 		//var fishImg = Object.keys(fishes)[Math.floor(Math.random() * Object.keys(fishes).length)]
-		ctx.drawImage(e.speed < 0 ? fishes['orange'].left : fishes['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
+		ctx.drawImage(e.speed < 0 ? teams[e.team]['orange'].left : teams[e.team]['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
 	});
 
 	flakes.forEach(function(f) {

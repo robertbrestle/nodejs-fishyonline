@@ -15,8 +15,11 @@ GameUIJS = {
 
                 player.color = document.getElementById('color').value;
                 if(document.getElementById('color').selectedIndex === 0) {
-                    player.color = Object.keys(fishes)[Math.floor(Math.random() * Object.keys(fishes).length)];
+                    player.color = Object.keys(teams.fish)[Math.floor(Math.random() * Object.keys(teams.fish).length)];
                 }
+
+                player.sizeX = player[player.team].sizeX;
+                player.sizeY = player[player.team].sizeY;
 
                 document.getElementById('splash').style='display:none;';
                 document.getElementById('sidebar').style='';
@@ -27,7 +30,7 @@ GameUIJS = {
         document.getElementById('chatinputbar').addEventListener('submit', function(e) {
             e.preventDefault();
             var chatinput = document.getElementById('chatinput');
-            console.log('message: ' + chatinput.value);
+            //console.log('message: ' + chatinput.value);
             socket.emit('chatMessage', chatinput.value);
             chatinput.value = '';
         });
@@ -51,7 +54,7 @@ GameUIJS = {
     appendChatMessage:function(message, id) {
         var li = document.createElement('li');
         if(typeof id !== 'undefined') {
-            li.className = players[id].team;
+            li.className = players[id].color;
         }
         li.textContent = message;
         document.getElementById('chatmessages').append(li);

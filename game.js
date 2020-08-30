@@ -22,6 +22,7 @@ var stageVars = {
 var playerVars = {
     minSizeX: 16,
     isLeft: false,
+    collisionInit: 3000,
     collisionWait: 250,
     fish: {
         sizeX: 16,
@@ -30,9 +31,9 @@ var playerVars = {
         maxSizeX: 150,
         scale: 0.5,
         screenTop: 0,
-        screenBottom: 550,
+        screenBottom: 525,
         minSpeed: 1,
-	    maxSpeed: 10
+	    maxSpeed: 7
     },
     crab: {
         sizeX: 32,
@@ -43,7 +44,7 @@ var playerVars = {
         screenTop: 500,
         screenBottom: 700,
         minSpeed: 1,
-        maxSpeed: 3
+        maxSpeed: 2
     },
     clam: {
         sizeX: 32,
@@ -93,7 +94,7 @@ function addPlayer(id, name, team, color) {
         sizeY: playerVars[team].sizeY,
         isLeft: playerVars.isLeft,
         score: 0,
-        lastCollision: Date.now()
+        lastCollision: Date.now() - playerVars.collisionInit
     };
     players[id] = newPlayer;
     

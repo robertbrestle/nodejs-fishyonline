@@ -56,6 +56,6 @@ io.on('connection', (socket) => {
 	game.startGameLoop(io);
 });
 
-http.listen(3000, () => {
+http.listen(25565, () => {
 	console.log('listening on *:3000');
 });

@@ -15,25 +15,38 @@ var player = {
 	sizeY: 8,
 	veloX: 0,
 	veloY: 0,
-	veloMax: 10,
-	veloInc: 0.5,
-	veloDec: 0.2,
 	isLeft: false,
+	isPolyp: true,
 	fish: {
         sizeX: 16,
 		sizeY: 8,
-		screenTop: 0
+		screenTop: 0,
+		veloMax: 10,
+		veloInc: 0.5,
+		veloDec: 0.2
     },
     crab: {
-        sizeX: 32,
-		sizeY: 32,
-		screenTop: 500
+        sizeX: 16,
+		sizeY: 16,
+		screenTop: 500,
+		veloMax: 5,
+		veloInc: 0.5,
+		veloDec: 0.3
     },
     clam: {
-        sizeX: 32,
-		sizeY: 32,
+        sizeX: 16,
+		sizeY: 16,
 		screenTop: 550
-    }
+	},
+	jelly: {
+		sizeX: 10,
+		sizeY: 16,
+		screenTop: 0,
+		polypMaxY: 550,
+		veloMax: 2,
+		veloInc: 0.1,
+		veloDec: 0.2
+	}
 };
 var players = {};
 
@@ -66,54 +79,68 @@ var teams = {
 	},
 	crab: {
 		orange: {
-			right: document.getElementById("orange_crab"),
-			left: document.getElementById("orange_crab")
+			img: document.getElementById("orange_crab")
 		},
 		blue: {
-			right: document.getElementById("blue_crab"),
-			left: document.getElementById("blue_crab")
+			img: document.getElementById("blue_crab")
 		},
 		green: {
-			right: document.getElementById("green_crab"),
-			left: document.getElementById("green_crab")
+			img: document.getElementById("green_crab")
 		},
 		purple: {
-			right: document.getElementById("purple_crab"),
-			left: document.getElementById("purple_crab")
+			img: document.getElementById("purple_crab")
 		},
 		black: {
-			right: document.getElementById("black_crab"),
-			left: document.getElementById("black_crab")
+			img: document.getElementById("black_crab")
 		},
 		red: {
-			right: document.getElementById("red_crab"),
-			left: document.getElementById("red_crab")
+			img: document.getElementById("red_crab")
 		}
 	},
 	clam: {
 		orange: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
 		},
 		blue: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
 		},
 		green: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
 		},
 		purple: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
 		},
 		black: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
 		},
 		red: {
-			right: document.getElementById("purple_clam"),
-			left: document.getElementById("purple_clam")
+			img: document.getElementById("purple_clam")
+		}
+	},
+	jelly: {
+		orange: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
+		},
+		blue: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
+		},
+		green: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
+		},
+		purple: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
+		},
+		black: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
+		},
+		red: {
+			polyp: document.getElementById("yellow_polyp"),
+			jelly: document.getElementById("yellow_jelly"),
 		}
 	}
 };

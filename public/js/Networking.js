@@ -53,7 +53,6 @@ NetworkingJS = {
 					player.sizeY = players[socket.id].sizeY;
 					player.score = players[socket.id].score;
 				}
-
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
@@ -70,19 +69,24 @@ NetworkingJS = {
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
+		socket.on('playerState', function(ps) {
+			console.log(JSON.stringify(ps));
+			if(typeof ps.id !== 'undefined') {
+				players[ps.id] = ps.player;
+
+				// update self
+				if(socket.id === ps.id) {
+					player.isPolyp = players[ps.id].isPolyp;
+				}
+			}
+		});
 		socket.on('enemies', function(eo) {
 			enemies = eo;
-		});
-		socket.on('enemy', function(eo) {
-			enemies[eo.index] = eo.enemy;
+			GameUIJS.updateNumberEnemies();
 		});
 		socket.on('flakes', function(fo) {
 			flakes = fo;
 		});
-		socket.on('flake', function(fo) {
-			flakes[fo.index] = fo.flake;
-		});
-
 
 
 		/* disconnections/errors */

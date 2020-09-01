@@ -25,12 +25,12 @@ io.on('connection', (socket) => {
 	});
 	socket.on('disconnect', () => {
 		console.log(socket.id + ' disconnected');
+		game.removePlayer();
 		if(typeof game.players[socket.id] !== 'undefined') {
 			socket.broadcast.emit('chatMessage', {message: game.players[socket.id].name + ' has disconnected'});
 			delete game.players[socket.id];
 		}
 		io.emit('disconnect', socket.id);
-		console.log('# enemies: ' + game.enemies.length);
 	});
 	socket.on('playerMovement', function(data) {
 		if(typeof game.players[socket.id] !== 'undefined') {
@@ -42,10 +42,18 @@ io.on('connection', (socket) => {
 			socket.disconnect();
 		}
 	});
-	socket.on('chatMessage', function(m) {
+	socket.on('playerState', function(data) {
 		if(typeof game.players[socket.id] !== 'undefined') {
+			game.players[socket.id].isPolyp = data.isPolyp;
+			socket.broadcast.emit('playerState', {player: game.players[socket.id], id: socket.id});
+		}
+	});
+	socket.on('chatMessage', function(m) {
+		if(m.startsWith('/')) {
+			game.command(m.split('/')[1]);
+		}else if(typeof game.players[socket.id] !== 'undefined') {
 			var resp = {};
-			resp.message = game.players[socket.id].name + '[' + game.players[socket.id].score + ']: ' + m;
+			resp.message = game.players[socket.id].name + '[' + game.players[socket.id].team + ']: ' + m;
 			resp.id = socket.id;
 			socket.emit('chatMessage', resp);
 			socket.broadcast.emit('chatMessage', resp);

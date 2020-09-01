@@ -25,13 +25,16 @@ function init() {
 				wasd[3] = true;
 				player.isLeft = false;
 				break;
-			case 219:	// [
-				player.sizeX -= 2;
-				player.sizeY = Math.floor(player.sizeX / 2);
-				break;
-			case 221:	// ]
-				player.sizeX += 2;
-				player.sizeY = Math.floor(player.sizeX / 2);
+			case 32:	// space - special ability
+				if(player.team === 'jelly' && player.y + player.sizeY >= player[player.team].polypMaxY) {
+					player.isPolyp = !player.isPolyp;
+					player.veloX = 0;
+					player.veloY = 0;
+					var thinPlayer = {
+						isPolyp: player.isPolyp
+					};
+					socket.emit('playerState', thinPlayer);
+				}
 				break;
 			default:
 				console.log(e.keyCode);
@@ -98,7 +101,7 @@ function initGame() {
 	canvas.background.src = 'img/background.png';
 
 	canvas.sand_background = new Image();
-	canvas.sand_background.src = 'img/sand_background.png';
+	canvas.sand_background.src = 'img/sand_background2.png';
 	
 	// reset arrays
 	enemies = [];
@@ -158,7 +161,7 @@ function main() {
 // movement and collision
 function collision() {
 
-	if(player.team === 'clam') {
+	if(player.team === 'clam' || (player.team === 'jelly' && player.isPolyp)) {
 		return;
 	}
 	
@@ -170,16 +173,16 @@ function collision() {
 	player.y += player.veloY;
 	
 	if(wasd[3]) {
-		player.veloX += player.veloInc;
+		player.veloX += player[player.team].veloInc;
 	}
 	if(wasd[1]) {
-		player.veloX -= player.veloInc;
+		player.veloX -= player[player.team].veloInc;
 	}
 	if(wasd[2] && player.y + player.sizeY < canvas.height) {
-		player.veloY += player.veloInc;
+		player.veloY += player[player.team].veloInc;
 	}
 	if(wasd[0] && player.y > 0) {
-		player.veloY -= player.veloInc;
+		player.veloY -= player[player.team].veloInc;
 	}
 	
 	// screen wrap around
@@ -195,12 +198,12 @@ function collision() {
 	if(!wasd[0] && !wasd[2]) {
 		// apply negative velocity
 		if(player.veloY < 0) {
-			player.veloY += player.veloDec;
+			player.veloY += player[player.team].veloDec;
 		}else if(player.veloY > 0) {
-			player.veloY -= player.veloDec;
+			player.veloY -= player[player.team].veloDec;
 		}
 		// if low velocity, reset to 0
-		if(Math.abs(player.veloY) < player.veloDec) {
+		if(Math.abs(player.veloY) < player[player.team].veloDec) {
 			player.veloY = 0;
 		}
 	}
@@ -209,26 +212,26 @@ function collision() {
 	if(!wasd[1] && !wasd[3]) {
 		// apply negative velocity
 		if(player.veloX < 0) {
-			player.veloX += player.veloDec;
+			player.veloX += player[player.team].veloDec;
 		}else if (player.veloX > 0) {
-			player.veloX -= player.veloDec;
+			player.veloX -= player[player.team].veloDec;
 		}
 		// if low velocity, reset to 0
-		if(Math.abs(player.veloX) < player.veloDec) {
+		if(Math.abs(player.veloX) < player[player.team].veloDec) {
 			player.veloX = 0;
 		}
 	}
 	
 	// cap max velocity
-	if(player.veloX > player.veloMax) {
-		player.veloX = player.veloMax
-	}else if(player.veloX < player.veloMax * -1) {
-		player.veloX = player.veloMax * -1;
+	if(player.veloX > player[player.team].veloMax) {
+		player.veloX = player[player.team].veloMax
+	}else if(player.veloX < player[player.team].veloMax * -1) {
+		player.veloX = player[player.team].veloMax * -1;
 	}
-	if(player.veloY > player.veloMax) {
-		player.veloY = player.veloMax;
-	}else if(player.veloY < player.veloMax * -1) {
-		player.veloY = player.veloMax * -1;
+	if(player.veloY > player[player.team].veloMax) {
+		player.veloY = player[player.team].veloMax;
+	}else if(player.veloY < player[player.team].veloMax * -1) {
+		player.veloY = player[player.team].veloMax * -1;
 	}
 	
 	
@@ -252,20 +255,35 @@ function draw() {
 	//ctx.fillRect(0, 550, 700, 700);
 	
 	// draw player
-	ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
+	if(player.team === 'jelly') {
+		ctx.drawImage(player.isPolyp ? teams[player.team][player.color].polyp : teams[player.team][player.color].jelly, player.x, player.y, player.sizeX, player.sizeY);
+	}else if(player.team === 'fish') {
+		ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
+	}else {
+		ctx.drawImage(teams[player.team][player.color].img, player.x, player.y, player.sizeX, player.sizeY);
+	}
 	ctx.fillText(player.name, player.x + player.sizeX/2 - (player.name.length * 3) , player.y - 5);
 	
 	Object.keys(players).forEach(function(p) {
 		if(socket.id !== p) {
 			var v = players[p];
-			ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
+			if(player.team === 'jelly') {
+				ctx.drawImage(v.isPolyp ? teams[v.team][v.color].polyp : teams[v.team][v.color].jelly, v.x, v.y, v.sizeX, v.sizeY);
+			}else if(v.team === 'fish') {
+				ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
+			}else {
+				ctx.drawImage(teams[v.team][v.color].img, v.x, v.y, v.sizeX, v.sizeY);
+			}
 			ctx.fillText(v.name, v.x + v.sizeX/2 - (v.name.length * 3), v.y - 5);
 		}
 	});
 
 	enemies.forEach(function(e) {
-		//var fishImg = Object.keys(fishes)[Math.floor(Math.random() * Object.keys(fishes).length)]
-		ctx.drawImage(e.speed < 0 ? teams[e.team]['orange'].left : teams[e.team]['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
+		if(e.team === 'fish') {
+			ctx.drawImage(e.speed < 0 ? teams[e.team][e.color].left : teams[e.team][e.color].right, e.x, e.y, e.sizeX, e.sizeY);
+		}else {
+			ctx.drawImage(teams[e.team][e.color].img, e.x, e.y, e.sizeX, e.sizeY);
+		}
 	});
 
 	flakes.forEach(function(f) {

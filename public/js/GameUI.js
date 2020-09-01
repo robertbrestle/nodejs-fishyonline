@@ -41,15 +41,17 @@ GameUIJS = {
             if(socket.id === players[p].id) {
                 connectedPlayers += '<b>';
             }
-            connectedPlayers += players[p].name + '[' + players[p].sizeX + ']: ' + players[p].score;
+            connectedPlayers += players[p].name + '[' + (players[p].team === 'jelly' ? players[p].sizeY : players[p].sizeX) + ']: ' + players[p].score;
             if(socket.id === players[p].id) {
                 connectedPlayers += '</b>';
             }
             connectedPlayers += '<br>'
         });
         document.getElementById('totalPlayers').textContent = Object.keys(players).length;
-        document.getElementById('totalEnemies').textContent = enemies.length;
         document.getElementById('connectedPlayers').innerHTML = connectedPlayers;
+    },
+    updateNumberEnemies:function() {
+        document.getElementById('totalEnemies').textContent = enemies.length;
     },
     appendChatMessage:function(message, id) {
         var li = document.createElement('li');

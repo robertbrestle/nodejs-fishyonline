@@ -6,5 +6,6 @@ module.exports = [
     "Marlin Monroe",
     "Swim Shady",
     "Bubba",
-    "Sushi"
+    "Sushi",
+    "Gillbert Godfishy"
 ];

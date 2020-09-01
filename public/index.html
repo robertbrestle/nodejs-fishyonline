@@ -30,11 +30,15 @@
 	<img id="red_crab" src="img/red_crab.png"/>
 	<!-- clam -->
 	<img id="purple_clam" src="img/clam.png"/>
+	<!-- polyp+jelly -->
+	<img id="yellow_polyp" src="img/polyp_yellow.png"/>
+	<img id="yellow_jelly" src="img/jelly_yellow.png"/>
 </div>
 
 <div id="splash">
 	<h1>Fishy ONLINE</h1>
 	<p>WASD or arrow keys to move</p>
+	<p>Press SPACE to activate special abilities (if available)</p>
 	<p>Eat smaller fish to get bigger and avoid larger fish or get eaten!</p>
 	<p>
 		<label for="name">My name is</label>
@@ -45,6 +49,7 @@
 		<select id="team">
 			<option value="fish">Fish</option>
 			<option value="crab">Crab</option>
+			<option value="jelly">Jellyfish</option>
 			<option value="clam">Clam [Spectator Mode]</option>
 		</select>
 	</p>
@@ -67,8 +72,8 @@
 <canvas id="stage" width="1" height="1"></canvas>
 <div id="sidebar" style="display:none;">
 	<div>
-		<h3>Players: <span id="totalPlayers">0</span></h3>
-		<h4>Enemies: <span id="totalEnemies">0</span></h4>
+		<h3>Enemies: <span id="totalEnemies">0</span></h3>
+		<h4>Players: <span id="totalPlayers">0</span></h4>
 		<hr>
 		<div id="connectedPlayers"></div>
 	</div>

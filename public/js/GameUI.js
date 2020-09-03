@@ -2,6 +2,13 @@ GameUIJS = {
     init:function() {
         document.getElementById('start')
 			.addEventListener('click', function() {
+
+                // check if canvas is supported
+                if(!canvas.getContext) {
+                    alert("Your browser does not support HTML5 Canvas :(");
+                    return;
+                }
+
                 document.getElementById('error').style='display:none;';
                 var name = document.getElementById('name').value.trim();
                 if(name === "") {
@@ -24,7 +31,9 @@ GameUIJS = {
                 document.getElementById('splash').style='display:none;';
                 document.getElementById('sidebar').style='';
                 document.getElementById('chatbar').style='';
-                initGame();
+                GameJS.initGame();
+                // connect
+		        NetworkingJS.connect();
         }, false);
 
         document.getElementById('chatinputbar').addEventListener('submit', function(e) {

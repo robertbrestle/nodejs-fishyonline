@@ -1,13 +1,7 @@
 NetworkingJS = {
 	init:function() {
 		socket = io();
-
-		socket.emit('registration', {
-			name: player.name,
-			team: player.team,
-			color: player.color
-		});
-
+		
 		socket.on('registration', function(p) {
 			players = p;
 			console.log('ME: ' + socket.id);
@@ -17,6 +11,7 @@ NetworkingJS = {
 			player.color = players[socket.id].color;
 			player.team = players[socket.id].team;
 			player.score = players[socket.id].score;
+			player.isPolyp = players[socket.id].isPolyp;
 			GameUIJS.updateConnectedPlayers();
 		});
 		socket.on('newPlayer', function(p) {
@@ -26,12 +21,12 @@ NetworkingJS = {
 		});
 		socket.on('playerMoved', function(p) {
 			if(typeof p.id !== 'undefined' && typeof players[p.id] !== 'undefined') {
-				players[p.id].x = p.player.x;
-				players[p.id].y = p.player.y;
-				players[p.id].isLeft = p.player.isLeft;
+				players[p.id].x = p.x;
+				players[p.id].y = p.y;
+				players[p.id].isLeft = p.isLeft;
 				if(socket.id === p.id) {
-					player.x = p.player.x;
-					player.y = p.player.y;
+					player.x = p.x;
+					player.y = p.y;
 				}
 			}
 		});
@@ -52,27 +47,29 @@ NetworkingJS = {
 					player.sizeX = players[socket.id].sizeX;
 					player.sizeY = players[socket.id].sizeY;
 					player.score = players[socket.id].score;
+					player.isPolyp = players[socket.id].isPolyp;
 				}
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
 		socket.on('playerScore', function(ps) {
 			if(typeof ps.id !== 'undefined') {
-				players[ps.id] = ps.player;
+				players[ps.id].sizeX = ps.sizeX;
+				players[ps.id].sizeY = ps.sizeY;
+				players[ps.id].score = ps.score;
 
 				// update self
 				if(socket.id === ps.id) {
-					player.sizeX = players[ps.id].sizeX;
-					player.sizeY = players[ps.id].sizeY;
-					player.score = players[ps.id].score;
+					player.sizeX = ps.sizeX;
+					player.sizeY = ps.sizeY;
+					player.score = ps.score;
 				}
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
 		socket.on('playerState', function(ps) {
-			console.log(JSON.stringify(ps));
 			if(typeof ps.id !== 'undefined') {
-				players[ps.id] = ps.player;
+				players[ps.id].isPolyp = ps.isPolyp;
 
 				// update self
 				if(socket.id === ps.id) {
@@ -98,8 +95,18 @@ NetworkingJS = {
 				GameUIJS.updateConnectedPlayers();
 			}
 		});
+		socket.on('timeout', function(e) {
+			GameUIJS.appendChatMessage("Connection error: timeout");
+		});
 		socket.on('error', function(e) {
 			GameUIJS.appendChatMessage("Connection error: disconnected from the server :(");
 		})
+	},
+	connect:function() {
+		socket.emit('registration', {
+			name: player.name,
+			team: player.team,
+			color: player.color
+		});
 	}
 }

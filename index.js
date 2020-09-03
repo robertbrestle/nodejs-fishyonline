@@ -20,7 +20,6 @@ io.on('connection', (socket) => {
 		socket.emit('registration', game.players);
 		socket.emit('chatMessage', {message: "Welcome to Fishy Online!"});
 		socket.broadcast.emit('players', game.players);
-		//socket.broadcast.emit('newPlayer', game.players[socket.id]);
 		socket.broadcast.emit('chatMessage', {message: game.players[socket.id].name + ' has connected'});
 	});
 	socket.on('disconnect', () => {
@@ -37,7 +36,14 @@ io.on('connection', (socket) => {
 			game.players[socket.id].x = data.x;
 			game.players[socket.id].y = data.y;
 			game.players[socket.id].isLeft = data.isLeft;
-			socket.broadcast.emit('playerMoved', {player: game.players[socket.id], id: socket.id});
+
+			var thinPlayer = {
+				x: data.x,
+				y: data.y,
+				id: socket.id,
+				isLeft: data.isLeft
+			};
+			socket.broadcast.emit('playerMoved', thinPlayer);
 		}else {
 			socket.disconnect();
 		}
@@ -45,7 +51,11 @@ io.on('connection', (socket) => {
 	socket.on('playerState', function(data) {
 		if(typeof game.players[socket.id] !== 'undefined') {
 			game.players[socket.id].isPolyp = data.isPolyp;
-			socket.broadcast.emit('playerState', {player: game.players[socket.id], id: socket.id});
+			var thinPlayer = {
+				isPolyp: data.isPolyp,
+				id: socket.id
+			};
+			socket.broadcast.emit('playerState', thinPlayer);
 		}
 	});
 	socket.on('chatMessage', function(m) {
@@ -64,6 +74,6 @@ io.on('connection', (socket) => {
 	game.startGameLoop(io);
 });
 
-http.listen(25565, () => {
+http.listen(3000, () => {
 	console.log('listening on *:3000');
 });

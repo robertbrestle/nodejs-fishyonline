@@ -21,7 +21,7 @@ var player = {
         sizeX: 16,
 		sizeY: 8,
 		screenTop: 0,
-		veloMax: 10,
+		veloMax: 8,
 		veloInc: 0.5,
 		veloDec: 0.2
     },
@@ -43,7 +43,7 @@ var player = {
 		sizeY: 16,
 		screenTop: 0,
 		polypMaxY: 550,
-		veloMax: 2,
+		veloMax: 1,
 		veloInc: 0.1,
 		veloDec: 0.2
 	}
@@ -165,18 +165,21 @@ var enemy = {
 	img: 'man'
 };
 
-/* GLOBALS */
-var canvas = {};
-var ctx = {};
+var settings = {
+	soundEnabled: true
+};
 
-var soundEnabled = true;
-var gamestarted = false;
-var paused = false;
-var gameover = false;
+/* GLOBALS */
+var canvas = document.getElementById('stage');
+var ctx = {};
 
 
 var enemies = [];
 var flakes = [];
+
+// send every other movement to the server
+// !!! REFACTOR THIS !!!
+var flipflop = true;
 
 //var ding = new Audio('sounds/ding.wav');
 //var bird = new Audio('sounds/bird.wav');
@@ -188,6 +191,14 @@ var scoreFont = "24px Verdana";
 // regulate fps
 var fps = 60;
 var fpsInterval, startTime, now, then, elapsed;
+then = Date.now();
+startTime = then;
+
+var frameRate = 1000/60;
+var aLastFrame = 0;
+var aCurrentFrame = 0;
+var aStartTime = 0;
+var aDeltaTime = 0;
 
 // networking
 var socket = null;
@@ -206,7 +217,7 @@ function clone(obj) {
 }
 
 function playSound(sound) {
-	if(soundEnabled) {
+	if(settings.soundEnabled) {
 	    sound.pause();
 		sound.currentTime = 0;
 	    sound.play();

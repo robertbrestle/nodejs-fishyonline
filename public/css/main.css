@@ -44,6 +44,15 @@ input {
 }
 #infobar > div {
 	padding: 5px;
+	/*height: 100%;*/
+}
+#scoreboardHeader {
+	display: flex;
+	justify-content: space-between;
+}
+#infobar #connectedPlayers {
+	overflow-y: auto;
+	max-height: 150px;
 }
 #chatmessages {
 	background-color: #ddd;
@@ -73,12 +82,6 @@ input {
 }
 #chatinputbar button {
 	width: 10%;
-}
-p.no_selection {
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
 }
 button {
 	padding: 10px;

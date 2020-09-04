@@ -21,7 +21,7 @@ var player = {
         sizeX: 16,
 		sizeY: 8,
 		screenTop: 0,
-		veloMax: 8,
+		veloMax: 5,
 		veloInc: 0.5,
 		veloDec: 0.2
     },
@@ -173,13 +173,8 @@ var settings = {
 var canvas = document.getElementById('stage');
 var ctx = {};
 
-
 var enemies = [];
 var flakes = [];
-
-// send every other movement to the server
-// !!! REFACTOR THIS !!!
-var flipflop = true;
 
 //var ding = new Audio('sounds/ding.wav');
 //var bird = new Audio('sounds/bird.wav');
@@ -233,7 +228,7 @@ function goFullScreen(element) {
 }
 
 function fixedCanvasSize() {
-	canvas.width = 700;
+	canvas.width = 900;
 	canvas.height = 700;
 }
 

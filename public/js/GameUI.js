@@ -29,8 +29,8 @@ GameUIJS = {
                 player.sizeY = player[player.team].sizeY;
 
                 document.getElementById('splash').style='display:none;';
-                document.getElementById('sidebar').style='';
-                document.getElementById('chatbar').style='';
+                document.getElementById('bottombar').style='';
+                document.getElementById('infobar').style='';
                 GameJS.initGame();
                 // connect
 		        NetworkingJS.connect();
@@ -39,9 +39,10 @@ GameUIJS = {
         document.getElementById('chatinputbar').addEventListener('submit', function(e) {
             e.preventDefault();
             var chatinput = document.getElementById('chatinput');
-            //console.log('message: ' + chatinput.value);
-            socket.emit('chatMessage', chatinput.value);
-            chatinput.value = '';
+            if(chatinput.value.trim() !== '') {
+                socket.emit('chatMessage', chatinput.value.trim());
+                chatinput.value = '';
+            }
         });
     },
     updateConnectedPlayers:function() {

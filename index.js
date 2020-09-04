@@ -37,6 +37,20 @@ io.on('connection', (socket) => {
 			game.players[socket.id].y = data.y;
 			game.players[socket.id].isLeft = data.isLeft;
 
+			//console.log('add to queue: ' + data.x);
+			//console.log('before:');
+			//console.log(JSON.stringify(game.movementQueue));
+			game.addMovement(socket.id, data);
+			/*
+			game.movementQueue[socket.id] = {
+				x: data.x,
+				y: data.y,
+				isLeft: data.isLeft
+			};
+			*/
+			//console.log('after:');
+			//console.log(JSON.stringify(game.movementQueue));
+			/*
 			var thinPlayer = {
 				x: data.x,
 				y: data.y,
@@ -44,6 +58,7 @@ io.on('connection', (socket) => {
 				isLeft: data.isLeft
 			};
 			socket.broadcast.emit('playerMoved', thinPlayer);
+			*/
 		}else {
 			socket.disconnect();
 		}

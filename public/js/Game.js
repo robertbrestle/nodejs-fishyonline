@@ -101,6 +101,9 @@ GameJS = {
 		player.veloY = 0;
 		player.isLeft = false;
 		wasd = [false, false, false, false];
+
+		// focus on <body> to enable keyboard movement
+		document.activeElement.blur();
 		
 		requestAnimationFrame(GameJS.main);
 	}
@@ -217,7 +220,7 @@ GameJS = {
 	draw:function() {
 		// draw background
 		ctx.drawImage(canvas.background, 0, 0, canvas.width, canvas.height);
-		ctx.drawImage(canvas.sand_background, 0, 550, 700, 150);
+		ctx.drawImage(canvas.sand_background, 0, 550, canvas.width, 150);
 		//ctx.fillRect(0, 550, 700, 700);
 		
 		// draw player
@@ -260,17 +263,16 @@ GameJS = {
 	,
 	network:function() {
 		if(player.x != player.lastX || player.y != player.lastY) {
-			if(flipflop) {
-				var thinPlayer = {
-					x: player.x,
-					y: player.y,
-					isLeft: player.isLeft
-				};
-				socket.emit('playerMovement', thinPlayer);
-				flipflop = false;
-			}else {
-				flipflop = true;
-			}
+
+			var thinPlayer = {
+				x: player.x,
+				y: player.y,
+				isLeft: player.isLeft
+			};
+			socket.emit('playerMovement', thinPlayer);
+
+			player.lastX = player.x;
+			player.lastY = player.y;
 		}
 	}
 };

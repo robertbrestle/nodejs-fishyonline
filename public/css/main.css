@@ -26,16 +26,7 @@ input {
 	width: 350px;
 	height: 350px;
 }
-#sidebar {
-	width: 200px;
-	height: 700px;
-	background-color: black;
-	color: white;
-}
-#sidebar > div {
-	padding: 0 5px;
-}
-#chatbar {
+#bottombar {
 	width: 900px;
 	height: 200px;
 	background-color: white;
@@ -45,13 +36,18 @@ input {
 	justify-content: flex-start;
 	flex-flow: row wrap;
 }
-#chatbar > * {
-	display: flex;
-	flex-flow: column nowrap;
+#infobar {
+	width: 30%;
+	height: 100%;
+	background-color: black;
+	color: white;
+}
+#infobar > div {
+	padding: 5px;
 }
 #chatmessages {
 	background-color: #ddd;
-	width: 100%;
+	width: 70%;
 	height: 100%;
 	list-style: none;
 	margin: 0;
@@ -65,12 +61,18 @@ input {
 }
 #chatinputbar {
 	width: 100%;
+	display: flex;
+	flex-direction: row;
+	height: 40px;
 }
 #chatinput {
 	border: 0;
 	border-top: solid 2px black;
-	height: 28px;
 	padding: 0 5px;
+	width: 90%;
+}
+#chatinputbar button {
+	width: 10%;
 }
 p.no_selection {
     -webkit-user-select: none; /* webkit (safari, chrome) browsers */

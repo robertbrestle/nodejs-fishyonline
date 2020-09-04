@@ -9,15 +9,22 @@ var players = {};
 var enemies = [];
 var flakes = [];
 
+var movementQueue = {};
+
 
 var startTime, now, then, elapsed;
 then = Date.now();
 startTime = then;
-var frameRate = 1000 / 60;
+var frameRate = 1000 / 30;
 
 var stageVars = {
-    width: 700,
-    height: 700
+    width: 900,
+    height: 700,
+    end: {
+        winner: '',
+        countdownMax: 10,
+        countdown: 10
+    }
 };
 
 var playerVars = {
@@ -124,6 +131,17 @@ function command(cmd) {
             break;
         case 'removeenemies':
             enemyVars.reduceTo -= 5;
+            break;
+        case 'screenclear':
+            enemies = [];
+            addEnemy(5);
+            enemyVars.reduceTo = 10;
+            Object.keys(players).forEach(function(p) {
+                if(enemies.length < enemyVars.maxNum) {
+                    addEnemy(5);
+                    enemyVars.reduceTo += 5;
+                }
+            });
             break;
         case 'fishfood':
             addFlake(5);
@@ -353,12 +371,13 @@ function collision() {
                         players[p].score -= enemyVars.points;
 
                         var thinPlayerMove = {
-                            id: p,
                             x: players[p].x,
                             y: players[p].y,
-                            isLeft: players[p].isLeft
+                            isLeft: players[p].isLeft,
+                            died: true
                         };
-                        io.emit('playerMoved', thinPlayerMove);
+                        addMovement(p, thinPlayerMove);
+                        //io.emit('playerMoved', thinPlayerMove);
 
                         var resp = {};
                         resp.id = p;
@@ -431,10 +450,34 @@ function gameloop() {
             then = now - (elapsed % frameRate);
 
             collision();
+            movement();
         }
         setImmediate(gameloop, frameRate);
 	}else {
         stopGameLoop();
+    }
+}
+
+function addMovement(id, data) {
+    //console.log(JSON.stringify(data));
+    if(movementQueue[id] === undefined) {
+        movementQueue[id] = {};
+    }
+    movementQueue[id].x = data.x;
+    movementQueue[id].y = data.y;
+    movementQueue[id].isLeft = data.isLeft;
+    if(typeof data.died !== 'undefined') {
+        movementQueue[id].died = data.died;
+    }
+}
+
+function movement() {
+    //console.log('movementQueue: ' + Object.keys(movementQueue).length);
+    if(Object.keys(movementQueue).length > 0) {
+        //console.log('queue processed');
+        //console.log(JSON.stringify(movementQueue));
+        io.emit('playersMoved', movementQueue);
+        movementQueue = {};
     }
 }
 
@@ -457,5 +500,6 @@ module.exports = {
     stopGameLoop,
     addPlayer,
     removePlayer,
-    command
+    command,
+    addMovement
 };

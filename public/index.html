@@ -70,18 +70,21 @@
 </div>
 
 <canvas id="stage" width="1" height="1"></canvas>
-<div id="sidebar" style="display:none;">
-	<div>
-		<h3>Enemies: <span id="totalEnemies">0</span></h3>
-		<h4>Players: <span id="totalPlayers">0</span></h4>
-		<hr>
-		<div id="connectedPlayers"></div>
-	</div>
-</div>
-<div id="chatbar" style="display:none;">
+
+
+<div id="bottombar" style="display:none;">
 	<ul id="chatmessages"></ul>
+	<div id="infobar" style="display:none;">
+		<div>
+			<div>Enemies: <span id="totalEnemies">0</span></div>
+			<div>Players: <span id="totalPlayers">0</span></div>
+			<hr>
+			<div id="connectedPlayers"></div>
+		</div>
+	</div>
 	<form id="chatinputbar">
 		<input id="chatinput" type="text" placeholder="enter your message here.." autocomplete="off"/>
+		<button type="submit">Yeee</button>
 	</form>
 </div>
 

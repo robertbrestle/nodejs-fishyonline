@@ -8,17 +8,22 @@ NetworkingJS = {
 			player.id = players[socket.id];
 			player.x = players[socket.id].x;
 			player.y = players[socket.id].y;
+			player.lastX = player.x;
+			player.lastY = player.y;
 			player.color = players[socket.id].color;
 			player.team = players[socket.id].team;
 			player.score = players[socket.id].score;
 			player.isPolyp = players[socket.id].isPolyp;
 			GameUIJS.updateConnectedPlayers();
 		});
+		/*
 		socket.on('newPlayer', function(p) {
 			console.log(p.name + ' connected');
 			players[p.id] = p;
 			GameUIJS.updateConnectedPlayers();
 		});
+		*/
+		/*
 		socket.on('playerMoved', function(p) {
 			if(typeof p.id !== 'undefined' && typeof players[p.id] !== 'undefined') {
 				players[p.id].x = p.x;
@@ -29,6 +34,25 @@ NetworkingJS = {
 					player.y = p.y;
 				}
 			}
+		});
+		*/
+		socket.on('playersMoved', function(pm) {
+			//console.log('playersMoved:');
+			//console.log(JSON.stringify(pm));
+			Object.keys(pm).forEach(function(p) {
+				if(typeof players[p] !== 'undefined') {
+					players[p].x = pm[p].x,
+					players[p].y = pm[p].y,
+					players[p].isLeft = pm[p].isLeft
+
+					if(socket.id === p) {
+						if(typeof pm[p].died !== 'undefined' && pm[p].died) {
+							player.x = pm[p].x;
+							player.y = pm[p].y;
+						}
+					}
+				}
+			});
 		});
 		socket.on('chatMessage', function(m) {
 			GameUIJS.appendChatMessage(m.message, m.id);
@@ -58,7 +82,7 @@ NetworkingJS = {
 				players[ps.id].sizeY = ps.sizeY;
 				players[ps.id].score = ps.score;
 
-				// update self
+				// update self if dead
 				if(socket.id === ps.id) {
 					player.sizeX = ps.sizeX;
 					player.sizeY = ps.sizeY;

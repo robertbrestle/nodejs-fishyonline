@@ -57,7 +57,7 @@ var playerVars = {
         sizeX: 16,
         sizeY: 16,
         minSizeX: 16,
-        maxSizeX: 64,
+        maxSizeX: 128,
         scale: 1,
         spawnTop: 525,
         spawnBottom: 700
@@ -95,8 +95,10 @@ var enemyVars = {
 
 var flakeVars = {
     maxNum: 10,
+    reduceTo: 20,
     flakeYStart: -5,
     size: 5,
+    sizeFish: 10,
     speed: 1,
     delay: 400,
     points: 1,
@@ -126,16 +128,19 @@ function command(cmd) {
             addEnemy(1, undefined, true);
             break;
         case 'addenemies':
-            addEnemy(5);
             enemyVars.reduceTo += 5;
+            addEnemy(5);
             break;
         case 'removeenemies':
             enemyVars.reduceTo -= 5;
             break;
         case 'screenclear':
             enemies = [];
-            addEnemy(5);
             enemyVars.reduceTo = 10;
+            addEnemy(5);
+            flakes = [];
+            flakeVars.reduceTo = 20;
+            addFlake(20);
             Object.keys(players).forEach(function(p) {
                 if(enemies.length < enemyVars.maxNum) {
                     addEnemy(5);
@@ -144,6 +149,7 @@ function command(cmd) {
             });
             break;
         case 'fishfood':
+            flakeVars.reduceTo += 5;
             addFlake(5);
             break;
         default:
@@ -175,8 +181,11 @@ function addPlayer(id, name, team, color) {
     }
 }
 
-function removePlayer() {
+function removePlayer(id) {
     enemyVars.reduceTo -= 5;
+    if(typeof players[id] !== 'undefined') {
+        delete players[id];
+    }
 }
 
 
@@ -246,8 +255,14 @@ function addEnemy(qty, index, spawnRare) {
     }
 }
 
+function addFlake(qty, index, location) {
 
-function addFlake(qty, index) {
+    // remove enemy if reduceTo < enemies.length
+    if(typeof index !== 'undefined' && flakeVars.reduceTo < flakes.length) {
+        flakes.splice(index, 1);
+        return;
+    }
+
     var addQty = 1;
     if(typeof qty !== 'undefined') {
         addQty = qty;
@@ -256,18 +271,30 @@ function addFlake(qty, index) {
     for(var i = 0; i < addQty; i++) {
         
         var flake = {};
-        flake.x = Math.floor((Math.random() * stageVars.width));
-        flake.y = flakeVars.flakeYStart;
+        if(typeof location !== 'undefined') {
+            flake.x = location.x;
+            flake.y = location.y;
+            flake.sizeX = flakeVars.sizeFish;
+            flake.sizeY = flakeVars.sizeFish;
+            flake.delay = 0;
+            flake.type = 'fish';
+        }else {
+            flake.x = Math.floor((Math.random() * stageVars.width));
+            flake.y = flakeVars.flakeYStart;
+            flake.sizeX = flakeVars.size;
+            flake.sizeY = flakeVars.size;
+            flake.delay = Math.floor(Math.random() * flakeVars.delay);
+            flake.type = '';
+        }
         flake.speed = flakeVars.speed;
-        // set spawn delay
-        flake.delay = Math.floor(Math.random() * flakeVars.delay);
-        flake.sizeX = flakeVars.size;
-        flake.sizeY = flakeVars.size;
-        
+
         if(addQty === 1 && typeof index !== 'undefined') {
             flakes[index].x = flake.x;
             flakes[index].y = flake.y;
+            flakes[index].sizeX = flake.sizeX;
+            flakes[index].sizeY = flake.sizeY;
             flakes[index].delay = flake.delay;
+            flakes[index].type = '';
         }else {
             flakes.push(helpers.clone(flake));
         }
@@ -285,6 +312,7 @@ function startGameLoop(myIO) {
         reset = false;
 
         enemyVars.reduceTo = 10;
+        flakeVars.reduceTo = 20;
 
         // init enemies
         addEnemy(5);
@@ -332,6 +360,8 @@ function stopGameLoop(isReset) {
 function collision() {
     // TODO: validate player collision
 
+    var rightNow = Date.now();
+
     // enemies
     for(var e = 0; e < enemies.length; e++) {
         var ce = enemies[e];
@@ -344,13 +374,14 @@ function collision() {
             if((ce.speed > 0 && ce.x - ce.sizeX > stageVars.width) ||
                 (ce.speed < 0 && ce.x + ce.sizeX < 0)) {
                     addEnemy(1, e);
+                    continue;
             }
             // if collision with enemy
             Object.keys(players).forEach(function(p) {
                 if(players[p].team === 'clam' || (players[p].team === 'jelly' && players[p].isPolyp)) {
                     return;
                 }
-                if((players[p].lastCollision + playerVars.collisionWait < Date.now()) && 
+                if((players[p].lastCollision + playerVars.collisionWait < rightNow) && 
                     helpers.intersect(ce, players[p])) {
 
                     // player is larger, consume enemy
@@ -367,7 +398,7 @@ function collision() {
                     }else {
                         players[p].x = Math.floor(stageVars.width/2 - (players[p].sizeX/2));
                         players[p].y = stageVars.height - players[p].sizeY - 10;
-                        players[p].lastCollision = Date.now();
+                        players[p].lastCollision = rightNow;
                         players[p].score -= enemyVars.points;
 
                         var thinPlayerMove = {
@@ -410,13 +441,21 @@ function collision() {
             // if OOB
             if(cf.y > stageVars.height) {
                 addFlake(1, f);
+                continue;
             }
             // if collision with enemy
+            //for(int p = 0; p < Object.keys(players).length; p++) {
             Object.keys(players).forEach(function(p) {
-                if(players[p].sizeY > flakeVars.flakeMaxSizeY || players[p].sizeX > flakeVars.flakeMaxSizeX) {
+                if(typeof flakes[f] === 'undefined') {
                     return;
                 }
-                if((players[p].lastCollision + playerVars.collisionWait < Date.now()) && 
+                if(players[p].team === flakes[f].type) {
+                    return;
+                }
+                if(players[p].team !== 'clam' && (players[p].sizeY > flakeVars.flakeMaxSizeY || players[p].sizeX > flakeVars.flakeMaxSizeX)) {
+                    return;
+                }
+                if((players[p].lastCollision + playerVars.collisionWait < rightNow) && 
                     helpers.intersect(cf, players[p])) {
 
                         addFlake(1, f);
@@ -472,10 +511,7 @@ function addMovement(id, data) {
 }
 
 function movement() {
-    //console.log('movementQueue: ' + Object.keys(movementQueue).length);
     if(Object.keys(movementQueue).length > 0) {
-        //console.log('queue processed');
-        //console.log(JSON.stringify(movementQueue));
         io.emit('playersMoved', movementQueue);
         movementQueue = {};
     }
@@ -493,13 +529,33 @@ function thinFlakes() {
     return tf;
 }
 
+function addPoop(id) {
+    if(typeof players[id] !== 'undefined' && players[id].team === 'fish' && players[id].sizeX > 1) {
+        var location = {
+            x: players[id].x + (players[id].sizeX / 2),
+            y: players[id].y + (players[id].sizeY / 2)
+        };
+        addFlake(1, undefined, location);
+
+        players[id].sizeX--;
+        players[id].sizeY = Math.floor(players[id].sizeX * playerVars[players[id].team].scale);
+        var thinPlayerScore = {
+            id: id,
+            sizeX: players[id].sizeX,
+            sizeY: players[id].sizeY,
+            score: players[id].score
+        };
+        io.emit('playerScore', thinPlayerScore);
+    }
+}
+
 module.exports = {
     players,
-    enemies,
     startGameLoop,
     stopGameLoop,
     addPlayer,
     removePlayer,
     command,
-    addMovement
+    addMovement,
+    addPoop
 };

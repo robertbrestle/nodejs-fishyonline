@@ -4,7 +4,6 @@ NetworkingJS = {
 		
 		socket.on('registration', function(p) {
 			players = p;
-			console.log('ME: ' + socket.id);
 			player.id = players[socket.id];
 			player.x = players[socket.id].x;
 			player.y = players[socket.id].y;
@@ -16,29 +15,7 @@ NetworkingJS = {
 			player.isPolyp = players[socket.id].isPolyp;
 			GameUIJS.updateConnectedPlayers();
 		});
-		/*
-		socket.on('newPlayer', function(p) {
-			console.log(p.name + ' connected');
-			players[p.id] = p;
-			GameUIJS.updateConnectedPlayers();
-		});
-		*/
-		/*
-		socket.on('playerMoved', function(p) {
-			if(typeof p.id !== 'undefined' && typeof players[p.id] !== 'undefined') {
-				players[p.id].x = p.x;
-				players[p.id].y = p.y;
-				players[p.id].isLeft = p.isLeft;
-				if(socket.id === p.id) {
-					player.x = p.x;
-					player.y = p.y;
-				}
-			}
-		});
-		*/
 		socket.on('playersMoved', function(pm) {
-			//console.log('playersMoved:');
-			//console.log(JSON.stringify(pm));
 			Object.keys(pm).forEach(function(p) {
 				if(typeof players[p] !== 'undefined') {
 					players[p].x = pm[p].x,
@@ -77,7 +54,7 @@ NetworkingJS = {
 			}
 		});
 		socket.on('playerScore', function(ps) {
-			if(typeof ps.id !== 'undefined') {
+			if(typeof ps.id !== 'undefined' && typeof players[ps.id] !== 'undefined') {
 				players[ps.id].sizeX = ps.sizeX;
 				players[ps.id].sizeY = ps.sizeY;
 				players[ps.id].score = ps.score;

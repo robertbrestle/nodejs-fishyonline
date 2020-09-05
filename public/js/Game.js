@@ -28,14 +28,26 @@ GameJS = {
 					break;
 				case 32:	// space - special ability
 					e.preventDefault();
-					if(player.team === 'jelly' && (player.isPolyp || player.y + player.sizeY >= player[player.team].polypMaxY)) {
-						player.isPolyp = !player.isPolyp;
-						player.veloX = 0;
-						player.veloY = 0;
-						var thinPlayer = {
-							isPolyp: player.isPolyp
-						};
-						socket.emit('playerState', thinPlayer);
+					// TODO: add timeout
+					switch(player.team) {
+						case 'jelly':
+							if(player.isPolyp || player.y + player.sizeY >= player[player.team].polypMaxY) {
+								player.isPolyp = !player.isPolyp;
+								player.veloX = 0;
+								player.veloY = 0;
+								var thinPlayer = {
+									isPolyp: player.isPolyp
+								};
+								socket.emit('playerState', thinPlayer);
+							}
+							break;
+						case 'fish':
+							if(player.sizeX > 1) {
+								socket.emit('playerPoop');
+							}
+							break;
+						default:
+							break;
 					}
 					break;
 				default:

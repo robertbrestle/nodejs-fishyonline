@@ -17,6 +17,8 @@ var player = {
 	veloY: 0,
 	isLeft: false,
 	isPolyp: true,
+	animationSpeed: 1000,
+	animationLast: Date.now(),
 	fish: {
         sizeX: 16,
 		sizeY: 8,
@@ -52,6 +54,7 @@ var players = {};
 
 var teams = {
 	fish: {
+		animationFrames: 1,
 		orange: {
 			right: document.getElementById("orange_right"),
 			left: document.getElementById("orange_left"),
@@ -78,46 +81,57 @@ var teams = {
 		}
 	},
 	crab: {
-		orange: {
-			img: document.getElementById("orange_crab")
-		},
-		blue: {
-			img: document.getElementById("blue_crab")
-		},
-		green: {
-			img: document.getElementById("green_crab")
-		},
-		purple: {
-			img: document.getElementById("purple_crab")
-		},
-		black: {
-			img: document.getElementById("black_crab")
-		},
-		red: {
-			img: document.getElementById("red_crab")
-		}
+		animationFrame: 1,
+		animationFrames: 2,
+		orange: [
+			document.getElementById("orange_crab"),
+			document.getElementById("orange_crab1")
+		],
+		blue: [
+			document.getElementById("blue_crab"),
+			document.getElementById("blue_crab1")
+		],
+		green: [
+			document.getElementById("green_crab"),
+			document.getElementById("green_crab1")
+		],
+		purple: [
+			document.getElementById("purple_crab"),
+			document.getElementById("purple_crab1")
+		],
+		black: [
+			document.getElementById("black_crab"),
+			document.getElementById("black_crab1")
+		],
+		red: [
+			document.getElementById("red_crab"),
+			document.getElementById("red_crab1")
+		]
 	},
 	clam: {
-		orange: {
-			img: document.getElementById("purple_clam")
-		},
-		blue: {
-			img: document.getElementById("purple_clam")
-		},
-		green: {
-			img: document.getElementById("purple_clam")
-		},
-		purple: {
-			img: document.getElementById("purple_clam")
-		},
-		black: {
-			img: document.getElementById("purple_clam")
-		},
-		red: {
-			img: document.getElementById("purple_clam")
-		}
+		animationFrame: 0,
+		animationFrames: 1,
+		orange: [
+			document.getElementById("purple_clam")
+		],
+		blue: [
+			document.getElementById("purple_clam")
+		],
+		green: [
+			document.getElementById("purple_clam")
+		],
+		purple: [
+			document.getElementById("purple_clam")
+		],
+		black: [
+			document.getElementById("purple_clam")
+		],
+		red: [
+			document.getElementById("purple_clam")
+		]
 	},
 	jelly: {
+		animationFrames: 1,
 		orange: {
 			polyp: document.getElementById("yellow_polyp"),
 			jelly: document.getElementById("yellow_jelly"),

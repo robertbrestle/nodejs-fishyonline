@@ -21,9 +21,11 @@ var stageVars = {
     width: 900,
     height: 700,
     end: {
-        winner: '',
+        roundOver: false,
+        winScore: 200,
         countdownMax: 10,
-        countdown: 10
+        countdown: 10,
+        tickTime: then
     }
 };
 
@@ -102,6 +104,7 @@ var flakeVars = {
     speed: 1,
     delay: 400,
     points: 1,
+    pointsFish: 2,
     flakeMaxSizeX: 100,
     flakeMaxSizeY: 100
 };
@@ -278,6 +281,7 @@ function addFlake(qty, index, location) {
             flake.sizeY = flakeVars.sizeFish;
             flake.delay = 0;
             flake.type = 'fish';
+            flake.points = flakeVars.pointsFish;
         }else {
             flake.x = Math.floor((Math.random() * stageVars.width));
             flake.y = flakeVars.flakeYStart;
@@ -285,6 +289,7 @@ function addFlake(qty, index, location) {
             flake.sizeY = flakeVars.size;
             flake.delay = Math.floor(Math.random() * flakeVars.delay);
             flake.type = '';
+            flake.points = flakeVars.points;
         }
         flake.speed = flakeVars.speed;
 
@@ -295,6 +300,7 @@ function addFlake(qty, index, location) {
             flakes[index].sizeY = flake.sizeY;
             flakes[index].delay = flake.delay;
             flakes[index].type = '';
+            flake.points = flake.points;
         }else {
             flakes.push(helpers.clone(flake));
         }
@@ -332,7 +338,6 @@ function startGameLoop(myIO) {
 }
 
 function stopGameLoop(isReset) {
-    console.log('resetting');
     isStarted = false;
     enemies = [];
     flakes = [];
@@ -394,6 +399,8 @@ function collision() {
                         }
                         players[p].score += enemyVars.points;
                         addEnemy(1, e);
+                        addFishFlake(p, false);
+                        checkWinCondition(p);
                     // enemy is larger - deduct points, reset position, broadcast
                     }else {
                         players[p].x = Math.floor(stageVars.width/2 - (players[p].sizeX/2));
@@ -458,13 +465,13 @@ function collision() {
                 if((players[p].lastCollision + playerVars.collisionWait < rightNow) && 
                     helpers.intersect(cf, players[p])) {
 
-                        addFlake(1, f);
                         if(players[p].sizeX < playerVars[players[p].team].maxSizeX) {
                             players[p].sizeX++;
                             players[p].sizeY = Math.floor(players[p].sizeX * playerVars[players[p].team].scale);
                         }
-                        players[p].score += flakeVars.points;
+                        players[p].score += flakes[f].points;
 
+                        addFlake(1, f);
                         var thinPlayerScore = {
                             id: p,
                             sizeX: players[p].sizeX,
@@ -472,12 +479,12 @@ function collision() {
                             score: players[p].score
                         };
                         io.emit('playerScore', thinPlayerScore);
+                        checkWinCondition(p);
                 }
             });
         }
     }
     io.emit('flakes', thinFlakes());
-
 }
 
 // use combination of setImmediate delay + delta time for smoothness
@@ -490,6 +497,9 @@ function gameloop() {
 
             collision();
             movement();
+            if(stageVars.end.roundOver) {
+                roundOver(now);
+            }
         }
         setImmediate(gameloop, frameRate);
 	}else {
@@ -529,7 +539,7 @@ function thinFlakes() {
     return tf;
 }
 
-function addPoop(id) {
+function addFishFlake(id, reduceSize) {
     if(typeof players[id] !== 'undefined' && players[id].team === 'fish' && players[id].sizeX > 1) {
         var location = {
             x: players[id].x + (players[id].sizeX / 2),
@@ -537,15 +547,43 @@ function addPoop(id) {
         };
         addFlake(1, undefined, location);
 
-        players[id].sizeX--;
-        players[id].sizeY = Math.floor(players[id].sizeX * playerVars[players[id].team].scale);
-        var thinPlayerScore = {
-            id: id,
-            sizeX: players[id].sizeX,
-            sizeY: players[id].sizeY,
-            score: players[id].score
-        };
-        io.emit('playerScore', thinPlayerScore);
+        if(typeof reduceSize !== 'undefined' && reduceSize) {
+            players[id].sizeX--;
+            players[id].sizeY = Math.floor(players[id].sizeX * playerVars[players[id].team].scale);
+            
+            var thinPlayerScore = {
+                id: id,
+                sizeX: players[id].sizeX,
+                sizeY: players[id].sizeY,
+                score: players[id].score
+            };
+            io.emit('playerScore', thinPlayerScore);
+        }
+    }
+}
+
+function checkWinCondition(id) {
+    if(stageVars.end.roundOver || typeof players[id] === 'undefined') {
+        return;
+    }
+    if(players[id].score >= stageVars.end.winScore) {
+        stageVars.end.roundOver = true;
+        io.emit('chatMessage', {message: players[id].name + '[' + players[id].team + '] has won the round!'});
+    }
+}
+function roundOver(now) {
+    if(stageVars.end.tickTime < now) {
+        stageVars.end.countdown--;
+        if(stageVars.end.countdown < 0) {
+            stageVars.end.countdown = stageVars.end.countdownMax;
+            stageVars.end.roundOver = false;
+            io.emit('chatMessage', {message: 'Resetting please wait..'});
+            reset = true;
+            stopGameLoop(true);
+        }else {
+            io.emit('chatMessage', {message: 'Resetting in ' + stageVars.end.countdown});
+            stageVars.end.tickTime = now + 1000;
+        }
     }
 }
 
@@ -557,5 +595,5 @@ module.exports = {
     removePlayer,
     command,
     addMovement,
-    addPoop
+    addFishFlake
 };

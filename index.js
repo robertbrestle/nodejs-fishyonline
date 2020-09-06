@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
 		}
 	});
 	socket.on('playerPoop', () => {
-		game.addPoop(socket.id);
+		game.addFishFlake(socket.id, true);
 	});
 	socket.on('chatMessage', function(m) {
 		if(m.startsWith('/')) {
@@ -66,6 +66,6 @@ io.on('connection', (socket) => {
 	});
 });
 
-http.listen(25565, () => {
-	console.log('listening on *:25565');
+http.listen(3000, () => {
+	console.log('listening on *:3000');
 });

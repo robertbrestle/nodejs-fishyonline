@@ -129,6 +129,7 @@ GameJS = {
 		if(aDeltaTime > 0) {
 			GameJS.collision();
 			GameJS.network();
+			GameJS.animation();
 		}
 		GameJS.draw();
 
@@ -241,7 +242,7 @@ GameJS = {
 		}else if(player.team === 'fish') {
 			ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
 		}else {
-			ctx.drawImage(teams[player.team][player.color].img, player.x, player.y, player.sizeX, player.sizeY);
+			ctx.drawImage(teams[player.team][player.color][teams[player.team].animationFrame], player.x, player.y, player.sizeX, player.sizeY);
 		}
 		ctx.fillText(player.name, player.x + player.sizeX/2 - (player.name.length * 3) , player.y - 5);
 		
@@ -253,7 +254,7 @@ GameJS = {
 				}else if(v.team === 'fish') {
 					ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
 				}else {
-					ctx.drawImage(teams[v.team][v.color].img, v.x, v.y, v.sizeX, v.sizeY);
+					ctx.drawImage(teams[v.team][v.color][teams[v.team].animationFrame], v.x, v.y, v.sizeX, v.sizeY);
 				}
 				ctx.fillText(v.name, v.x + v.sizeX/2 - (v.name.length * 3), v.y - 5);
 			}
@@ -263,7 +264,7 @@ GameJS = {
 			if(e.team === 'fish') {
 				ctx.drawImage(e.speed < 0 ? teams[e.team][e.color].left : teams[e.team][e.color].right, e.x, e.y, e.sizeX, e.sizeY);
 			}else {
-				ctx.drawImage(teams[e.team][e.color].img, e.x, e.y, e.sizeX, e.sizeY);
+				ctx.drawImage(teams[e.team][e.color][teams[e.team].animationFrame], e.x, e.y, e.sizeX, e.sizeY);
 			}
 		});
 
@@ -286,5 +287,19 @@ GameJS = {
 			player.lastX = player.x;
 			player.lastY = player.y;
 		}
+	}
+	,
+	animation:function() {
+		let now = Date.now();
+		Object.keys(teams).forEach(function(t) {
+			if(teams[t].animationFrames > 1 && player.animationLast + player.animationSpeed < now) {
+				teams[t].animationFrame++;
+				if(teams[t].animationFrame === teams[t].animationFrames) {
+					teams[t].animationFrame = 0;
+				}
+				player.animationLast = now;
+			}
+		});
+		
 	}
 };

@@ -86,7 +86,7 @@ var enemyVars = {
     maxX: 150,
     rareMinX: 300,
     rareMaxX: 500,
-    rareChance: 0.1,
+    rareChance: 0.2,
 	minSpeed: 1,
 	maxSpeed: 10,
 	delay: 50,
@@ -407,12 +407,14 @@ function collision() {
                         players[p].y = stageVars.height - players[p].sizeY - 10;
                         players[p].lastCollision = rightNow;
                         players[p].score -= enemyVars.points;
+                        // player death time + collision wait = client to show invulnerable animation
+                        players[p].diedAt = rightNow + playerVars.collisionWait;
 
                         var thinPlayerMove = {
                             x: players[p].x,
                             y: players[p].y,
                             isLeft: players[p].isLeft,
-                            died: true
+                            diedAt: players[p].diedAt
                         };
                         addMovement(p, thinPlayerMove);
                         //io.emit('playerMoved', thinPlayerMove);
@@ -459,7 +461,7 @@ function collision() {
                 if(players[p].team === flakes[f].type) {
                     return;
                 }
-                if(players[p].team !== 'clam' && (players[p].sizeY > flakeVars.flakeMaxSizeY || players[p].sizeX > flakeVars.flakeMaxSizeX)) {
+                if(players[p].team !== 'clam' && (players[p].sizeY >= flakeVars.flakeMaxSizeY || players[p].sizeX >= flakeVars.flakeMaxSizeX)) {
                     return;
                 }
                 if((players[p].lastCollision + playerVars.collisionWait < rightNow) && 
@@ -515,8 +517,8 @@ function addMovement(id, data) {
     movementQueue[id].x = data.x;
     movementQueue[id].y = data.y;
     movementQueue[id].isLeft = data.isLeft;
-    if(typeof data.died !== 'undefined') {
-        movementQueue[id].died = data.died;
+    if(typeof data.diedAt !== 'undefined') {
+        movementQueue[id].diedAt = data.diedAt;
     }
 }
 

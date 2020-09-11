@@ -18,14 +18,18 @@ NetworkingJS = {
 		socket.on('playersMoved', function(pm) {
 			Object.keys(pm).forEach(function(p) {
 				if(typeof players[p] !== 'undefined') {
-					players[p].x = pm[p].x,
-					players[p].y = pm[p].y,
-					players[p].isLeft = pm[p].isLeft
+					players[p].x = pm[p].x;
+					players[p].y = pm[p].y;
+					players[p].isLeft = pm[p].isLeft;
+					if(typeof pm[p].diedAt !== 'undefined') {
+						players[p].diedAt = pm[p].diedAt;
+					}
 
 					if(socket.id === p) {
-						if(typeof pm[p].died !== 'undefined' && pm[p].died) {
+						if(typeof pm[p].diedAt !== 'undefined') {
 							player.x = pm[p].x;
 							player.y = pm[p].y;
+							player.diedAt = pm[p].diedAt;
 						}
 					}
 				}

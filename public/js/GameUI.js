@@ -22,7 +22,7 @@ GameUIJS = {
 
                 player.color = document.getElementById('color').value;
                 if(document.getElementById('color').selectedIndex === 0) {
-                    player.color = Object.keys(teams.fish)[Math.floor(Math.random() * Object.keys(teams.fish).length)];
+                    player.color = colors[Math.floor(Math.random() * colors.length)];
                 }
 
                 player.sizeX = player[player.team].sizeX;

@@ -83,6 +83,18 @@ GameJS = {
 					break;
 			}
 		}, false);
+
+		// hit ESC from the chatbox to focus on the screen
+		document.getElementById('chatinput')
+				.addEventListener('keydown', function(e) {
+			switch(e.keyCode) {
+				case 27: // ESC
+					document.activeElement.blur();
+					break;
+				default:
+					break;
+			}
+		});
 		
 		/* LISTENERS */
 	}//init
@@ -237,12 +249,19 @@ GameJS = {
 		//ctx.fillRect(0, 550, 700, 700);
 		
 		// draw player
-		if(player.team === 'jelly') {
-			ctx.drawImage(player.isPolyp ? teams[player.team][player.color].polyp : teams[player.team][player.color].jelly, player.x, player.y, player.sizeX, player.sizeY);
-		}else if(player.team === 'fish') {
-			ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
+		if(player.deathFlicker === 0) {
+			if(player.team === 'jelly') {
+				ctx.drawImage(player.isPolyp ? teams[player.team][player.color].polyp : teams[player.team][player.color].jelly, player.x, player.y, player.sizeX, player.sizeY);
+			}else if(player.team === 'fish') {
+				ctx.drawImage(player.isLeft ? teams[player.team][player.color].left : teams[player.team][player.color].right, player.x, player.y, player.sizeX, player.sizeY);
+			}else {
+				ctx.drawImage(teams[player.team][player.color][teams[player.team].animationFrame], player.x, player.y, player.sizeX, player.sizeY);
+			}
+			if(player.diedAt > Date.now()) {
+				player.deathFlicker = player.deathFlickerMax;
+			}
 		}else {
-			ctx.drawImage(teams[player.team][player.color][teams[player.team].animationFrame], player.x, player.y, player.sizeX, player.sizeY);
+			player.deathFlicker--;
 		}
 		ctx.fillText(player.name, player.x + player.sizeX/2 - (player.name.length * 3) , player.y - 5);
 		

@@ -5,7 +5,6 @@ var player = {
 	color: 'orange',
 	team: 'fish',
 	name: 'Jimmy',
-	color: '',
 	score: 0,
 	x: 64,
 	y: 64,
@@ -19,6 +18,8 @@ var player = {
 	isPolyp: true,
 	animationSpeed: 1000,
 	animationLast: Date.now(),
+	deathFlicker: 0,
+	deathFlickerMax: 4,
 	fish: {
         sizeX: 16,
 		sizeY: 8,
@@ -51,6 +52,8 @@ var player = {
 	}
 };
 var players = {};
+
+var colors = ["orange", "blue", "green", "purple", "black", "red"];
 
 var teams = {
 	fish: {

@@ -201,16 +201,17 @@ var flakes = [];
 var scoreFont = "24px Verdana";
 
 // regulate fps
+var tick = 60;
 var fps = 60;
-var fpsInterval, startTime, now, then, elapsed;
-then = Date.now();
-startTime = then;
+//var fpsInterval, startTime, now, then, elapsed;
+//then = Date.now();
+//startTime = then;
 
-var frameRate = 1000/60;
-var aLastFrame = 0;
-var aCurrentFrame = 0;
+var tickRate = 1000/tick;
+var frameRate = 1000/fps;
 var aStartTime = 0;
-var aDeltaTime = 0;
+var aCurrentFrame = 0, aLastFrame = 0, aDeltaFrame = 0;
+var aCurrentTick = 0, aLastTick = 0, aDeltaTick = 0;
 
 // networking
 var socket = null;

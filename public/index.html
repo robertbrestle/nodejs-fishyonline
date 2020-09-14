@@ -99,6 +99,35 @@
 	</form>
 </div>
 
+<div style="width:100%;">
+	<a id="settingstoggle" href="#" title="toggle settings menu">
+		<img src="/img/icons/gear.svg" alt="toggle settings">
+	</a>
+</div>
+
+
+<div id="settingsbar" style="display:none;">
+	<div>
+		<label for="framerateInput">FPS</label>
+		<select id="framerateInput">
+			<option>0.1</option>
+			<option>0.5</option>
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+			<option>5</option>
+			<option>10</option>
+			<option>15</option>
+			<option>20</option>
+			<option>30</option>
+			<option>40</option>
+			<option>50</option>
+			<option selected>60</option>
+		</select>
+	</div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/Globals.js"></script>
 <script src="js/GameUI.js"></script>

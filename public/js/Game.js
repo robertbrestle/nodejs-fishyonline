@@ -10,19 +10,23 @@ GameJS = {
 			switch(e.keyCode) {
 				case 87:
 				case 38:
+					e.preventDefault();
 					wasd[0] = true;
 					break;
 				case 83:
 				case 40:
+					e.preventDefault();
 					wasd[2] = true;
 					break;
 				case 65:
 				case 37:
+					e.preventDefault();
 					wasd[1] = true;
 					player.isLeft = true;
 					break;
 				case 68:
 				case 39:
+					e.preventDefault();
 					wasd[3] = true;
 					player.isLeft = false;
 					break;
@@ -134,16 +138,27 @@ GameJS = {
 	,
 	main:function(time) {
 		// significantly smoother than Date.now() - long live frame drops!
+		//aCurrentFrame = Math.round((time - aStartTime) / frameRate);
+		//aDeltaTime = (aCurrentFrame - aLastFrame) * frameRate;
+		//aLastFrame = aCurrentFrame;
+
+		aCurrentTick = Math.round((time - aStartTime) / tickRate);
+		aDeltaTick = (aCurrentTick - aLastTick) * tickRate;
+		aLastTick = aCurrentTick;
+
 		aCurrentFrame = Math.round((time - aStartTime) / frameRate);
-		aDeltaTime = (aCurrentFrame - aLastFrame) * frameRate;
+		aDeltaFrame = (aCurrentFrame - aLastFrame) * frameRate;
 		aLastFrame = aCurrentFrame;
 
-		if(aDeltaTime > 0) {
+
+		if(aDeltaTick > 0) {
 			GameJS.collision();
 			GameJS.network();
 			GameJS.animation();
 		}
-		GameJS.draw();
+		if(aDeltaFrame > 0) {
+			GameJS.draw();
+		}
 
 		requestAnimationFrame(GameJS.main);
 	}
@@ -295,7 +310,6 @@ GameJS = {
 	,
 	network:function() {
 		if(player.x != player.lastX || player.y != player.lastY) {
-
 			var thinPlayer = {
 				x: player.x,
 				y: player.y,

@@ -44,6 +44,26 @@ GameUIJS = {
                 chatinput.value = '';
             }
         });
+
+        // SETTINGS
+        document.getElementById('settingstoggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(document.getElementById('settingsbar').style.length >= 1) {
+                document.getElementById('settingsbar').style='';
+            }else {
+                document.getElementById('settingsbar').style='display:none';
+            }
+            document.activeElement.blur();
+        });
+        document.getElementById('framerateInput').addEventListener('change', function(e) {
+            var framerateInput = document.getElementById('framerateInput').value;
+            var v = Number(framerateInput);
+            if(v > 0) {
+                fps = v;
+                frameRate = 1000/v;
+            }
+            document.activeElement.blur();
+        });
     },
     updateConnectedPlayers:function() {
         var connectedPlayers = "";

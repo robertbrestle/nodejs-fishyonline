@@ -28,6 +28,9 @@ GameUIJS = {
                 player.sizeX = player[player.team].sizeX;
                 player.sizeY = player[player.team].sizeY;
 
+                // apply settings
+                GameUIJS.updateFramerate();
+
                 document.getElementById('splash').style='display:none;';
                 document.getElementById('bottombar').style='';
                 document.getElementById('infobar').style='';
@@ -56,12 +59,7 @@ GameUIJS = {
             document.activeElement.blur();
         });
         document.getElementById('framerateInput').addEventListener('change', function(e) {
-            var framerateInput = document.getElementById('framerateInput').value;
-            var v = Number(framerateInput);
-            if(v > 0) {
-                fps = v;
-                frameRate = 1000/v;
-            }
+            GameUIJS.updateFramerate();
             document.activeElement.blur();
         });
     },
@@ -91,5 +89,18 @@ GameUIJS = {
         li.textContent = message;
         document.getElementById('chatmessages').append(li);
         document.getElementById('chatmessages').scrollTop = document.getElementById('chatmessages').scrollHeight;
+    },
+    updateFramerate:function(override) {
+        var framerateInput;
+        if(typeof override !== 'undefined') {
+            framerateInput = override;
+        }else {
+            framerateInput = document.getElementById('framerateInput').value;
+        }
+        var v = Number(framerateInput);
+        if(v > 0) {
+            fps = v;
+            frameRate = 1000/v;
+        }
     }
 };

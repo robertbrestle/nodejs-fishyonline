@@ -102,7 +102,7 @@ var flakeVars = {
     size: 5,
     sizeFish: 10,
     speed: 1,
-    delay: 400,
+    delay: 1000,
     points: 1,
     pointsFish: 2,
     flakeMaxSizeX: 100,

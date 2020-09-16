@@ -37,7 +37,7 @@ input {
 }
 #infobar {
 	flex-basis: 30%;
-	height: 80%;
+	height: 85%;
 	background-color: black;
 	color: white;
 }
@@ -55,7 +55,7 @@ input {
 }
 #chatmessages {
 	background-color: #ddd;
-	height: 80%;
+	height: 85%;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -70,7 +70,7 @@ input {
 #chatinputbar {
 	display: flex;
 	flex-direction: row;
-	height: 40px;
+	height: 15%;
 	flex-basis: 100%;
 }
 #chatinput {
@@ -103,10 +103,20 @@ input {
 #settingsbar > div {
 	padding: 10px;
 }
+#settingsbar > div:hover .tooltip {
+	display: block;
+}
+.tooltip {
+	display: none;
+	background: white;
+	border: 2px solid black;
+	position: absolute;
+	padding: 5px;
+}
 
 
 button {
-	padding: 10px;
+	padding: 5px;
 	/*border-radius: 10px;*/
 	color: white;
 	font-weight: bold;

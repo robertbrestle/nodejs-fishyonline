@@ -105,8 +105,12 @@
 	</a>
 </div>
 
-
+<!-- TODO: load preferences from cookies? -->
 <div id="settingsbar" style="display:none;">
+	<div>
+		Controls
+		<span class="tooltip">WASD or arrow keys to move<br>Spacebar to activate special ability (if available)<br>ESC to focus on the game screen</span>
+	</div>
 	<div>
 		<label for="framerateInput">FPS</label>
 		<select id="framerateInput">
@@ -125,6 +129,7 @@
 			<option>50</option>
 			<option selected>60</option>
 		</select>
+		<span class="tooltip">The game's drawing speed; not your browser's framerate<br>Decreasing this value may reduce stuttering<br>Setting this too low will enable slideshow mode<br>Default: 60</span>
 	</div>
 </div>
 

@@ -13,15 +13,22 @@ io.on('connection', (socket) => {
 	console.log(socket.id + ' connected');
 	
 	socket.on('registration', (player) => {
-		// attempt to start game
-		game.startGameLoop(io);
-		
-		game.addPlayer(socket.id, player.name, player.team, player.color);
-		
-		socket.emit('registration', game.players);
-		socket.emit('chatMessage', {message: "Welcome to Fishy Online!"});
-		socket.broadcast.emit('players', game.players);
-		socket.broadcast.emit('chatMessage', {message: game.players[socket.id].name + ' has connected'});
+		// validate player object
+		if(game.validatePlayer(player)) {
+			// attempt to start game
+			game.startGameLoop(io);
+			// add player 
+			game.addPlayer(socket.id, player.name, player.team, player.color);
+			
+			// broadcast registration
+			socket.emit('registration', game.players);
+			socket.emit('chatMessage', {message: "Welcome to Fishy Online!"});
+			// broadcast data to new user
+			socket.broadcast.emit('players', game.players);
+			socket.broadcast.emit('chatMessage', {message: game.players[socket.id].name + ' has connected'});
+		}else {
+			socket.disconnect();
+		}
 	});
 	socket.on('disconnect', () => {
 		console.log(socket.id + ' disconnected');

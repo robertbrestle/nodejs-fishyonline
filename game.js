@@ -30,6 +30,7 @@ var stageVars = {
 };
 
 var playerVars = {
+    maxNameLength: 12,
     isLeft: false,
     isPolyp: true,
     collisionWait: 3000,
@@ -118,6 +119,13 @@ var colors = [
     'red'
 ];
 
+var teams = [
+    'fish',
+    'crab',
+    'jelly',
+    'clam'
+];
+
 ////////////////////////////////////////////////////////
 
 function command(cmd) {
@@ -161,9 +169,26 @@ function command(cmd) {
     }
 }
 
+function validatePlayer(player) {
+    // player info validation :^)
+    var isValid = true;
+
+    if(typeof player.name === 'undefined' || player.name === '' || player.name.length >= playerVars.maxNameLength) {
+        isValid = false;
+    }
+    if(typeof player.team === 'undefined' || player.team === '' || teams.indexOf(player.team) === -1) {
+        isValid = false;
+    }
+    if(typeof player.color === 'undefined' || player.color === '' || colors.indexOf(player.color) === -1) {
+        isValid = false;
+    }
+
+    return isValid;
+}
+
 function addPlayer(id, name, team, color) {
     var newPlayer = {
-        name: name,
+        name: name.slice(0,playerVars.maxNameLength),
         color: color,
         team: team,
         x: Math.floor(Math.random() * Math.floor(stageVars.width/2)) + Math.floor(stageVars.width/4),
@@ -593,6 +618,7 @@ module.exports = {
     players,
     startGameLoop,
     stopGameLoop,
+    validatePlayer,
     addPlayer,
     removePlayer,
     command,

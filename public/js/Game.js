@@ -32,6 +32,7 @@ GameJS = {
 					break;
 				case 32:	// space - special ability
 					e.preventDefault();
+					playSound(clank);
 					// TODO: add timeout
 					switch(player.team) {
 						case 'jelly':
@@ -132,6 +133,11 @@ GameJS = {
 
 		// focus on <body> to enable keyboard movement
 		document.activeElement.blur();
+
+		// music
+		if(document.getElementById('musicToggle').checked) {
+			music.play();
+		}
 		
 		requestAnimationFrame(GameJS.main);
 	}
@@ -264,6 +270,7 @@ GameJS = {
 		//ctx.fillRect(0, 550, 700, 700);
 		
 		// draw player
+		// TODO: fix death animation
 		if(player.deathFlicker === 0) {
 			if(player.team === 'jelly') {
 				ctx.drawImage(player.isPolyp ? teams[player.team][player.color].polyp : teams[player.team][player.color].jelly, player.x, player.y, player.sizeX, player.sizeY);

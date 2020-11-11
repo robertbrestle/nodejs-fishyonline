@@ -30,6 +30,7 @@ NetworkingJS = {
 							player.x = pm[p].x;
 							player.y = pm[p].y;
 							player.diedAt = pm[p].diedAt;
+							playSound(pain);
 						}
 					}
 				}
@@ -67,6 +68,9 @@ NetworkingJS = {
 				if(socket.id === ps.id) {
 					player.sizeX = ps.sizeX;
 					player.sizeY = ps.sizeY;
+					if(player.score < ps.score) {
+						playSound(ding);
+					}
 					player.score = ps.score;
 				}
 				GameUIJS.updateConnectedPlayers();

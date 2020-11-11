@@ -62,6 +62,14 @@ GameUIJS = {
             GameUIJS.updateFramerate();
             document.activeElement.blur();
         });
+        document.getElementById('musicToggle').addEventListener('change', function(e) {
+            if(e.currentTarget.checked) {
+                music.currentTime = 0;
+                music.play();
+            }else {
+                music.pause();
+            }
+        });
     },
     updateConnectedPlayers:function() {
         var connectedPlayers = "";

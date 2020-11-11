@@ -216,6 +216,13 @@ var aCurrentTick = 0, aLastTick = 0, aDeltaTick = 0;
 // networking
 var socket = null;
 
+// audio
+var ding = new Audio('audio/ding.wav');
+var pain = new Audio('audio/pain.wav');
+var clank = new Audio('audio/clank.wav');
+var music = document.getElementById('music');
+music.loop = true;
+
 
 /* GLOBALS */
 
@@ -230,7 +237,7 @@ function clone(obj) {
 }
 
 function playSound(sound) {
-	if(settings.soundEnabled) {
+	if(document.getElementById('sfxToggle').checked) {
 	    sound.pause();
 		sound.currentTime = 0;
 	    sound.play();

@@ -39,6 +39,12 @@
 	<!-- polyp+jelly -->
 	<img id="yellow_polyp" src="img/polyp_yellow.png"/>
 	<img id="yellow_jelly" src="img/jelly_yellow.png"/>
+
+	<!-- music -->
+	<audio id="music">
+		<source src="audio/fishyv3.wav" type="audio/wav">
+		<source src="audio/fishyv3.mp3" type="audio/mpeg">
+	</audio>
 </div>
 
 <div id="splash">
@@ -130,6 +136,16 @@
 			<option selected>60</option>
 		</select>
 		<span class="tooltip">The game's drawing speed; not your browser's framerate<br>Decreasing this value may reduce stuttering<br>Setting this too low will enable slideshow mode<br>Default: 60</span>
+	</div>
+	<div>
+		<label for="musicToggle">Music</label>
+		<input id="musicToggle" type="checkbox">
+		<span class="tooltip">Toggle background music</span>
+	</div>
+	<div>
+		<label for="sfxToggle">Sound</label>
+		<input id="sfxToggle" type="checkbox">
+		<span class="tooltip">Toggle sound effects</span>
 	</div>
 </div>
 

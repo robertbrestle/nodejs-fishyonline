@@ -24,7 +24,7 @@ var player = {
         sizeX: 16,
 		sizeY: 8,
 		screenTop: 0,
-		veloMax: 5,
+		veloMax: 7,
 		veloInc: 0.5,
 		veloDec: 0.2
     },
@@ -201,7 +201,7 @@ var flakes = [];
 var scoreFont = "24px Verdana";
 
 // regulate fps
-var tick = 60;
+var tick = 30;
 var fps = 60;
 //var fpsInterval, startTime, now, then, elapsed;
 //then = Date.now();

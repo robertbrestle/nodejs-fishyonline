@@ -15,11 +15,15 @@ var movementQueue = {};
 var startTime, now, then, elapsed;
 then = Date.now();
 startTime = then;
-var frameRate = 1000 / 30;
+var tickRate = 1000 / 30;
+// limits the number of times
+var enemyTick = 0;
+var enemyTickMax = 10;
 
 var stageVars = {
     width: 900,
     height: 700,
+    spawnWidthOffset: 10,
     end: {
         roundOver: false,
         winScore: 200,
@@ -257,9 +261,9 @@ function addEnemy(qty, index, spawnRare) {
         
         // determine direction
         if(Math.floor(Math.random() * 2)) {
-            enemy.x = enemy.sizeX * -1;
+            enemy.x = (enemy.sizeX + (enemy.speed * stageVars.spawnWidthOffset)) * -1;
         }else {
-            enemy.x = enemy.sizeX + stageVars.width;
+            enemy.x = (enemy.sizeX + (enemy.speed * stageVars.spawnWidthOffset)) + stageVars.width;
             enemy.speed *= -1;
         }
         enemy.y = Math.floor((Math.random() * (playerVars[enemy.team].spawnBottom - playerVars[enemy.team].spawnTop)) + playerVars[enemy.team].spawnTop);
@@ -461,7 +465,12 @@ function collision() {
             });
         }
     }
-    io.emit('enemies', enemies);
+    // send enemies every (tickRate * enemyTickMax)
+    enemyTick++;
+    if(enemyTick >= enemyTickMax) {
+        enemyTick = 0;
+        io.emit('enemies', enemies);
+    }
 
 
     // flakes
@@ -512,26 +521,30 @@ function collision() {
         }
     }
     io.emit('flakes', thinFlakes());
-}
+}//collision
 
 // use combination of setImmediate delay + delta time for smoothness
 function gameloop() {
-	if(Object.keys(io.sockets.sockets).length > 0 && !reset) {
-		now = Date.now();
-		elapsed = now - then;
-		if(elapsed > frameRate) {
-            then = now - (elapsed % frameRate);
-
-            collision();
-            movement();
-            if(stageVars.end.roundOver) {
-                roundOver(now);
+    io.fetchSockets()
+      .then((sockets) => {
+        if(sockets.length > 0 && !reset) {
+            now = Date.now();
+            elapsed = now - then;
+            if(elapsed > tickRate) {
+                then = now - (elapsed % tickRate);
+    
+                collision();
+                movement();
+                if(stageVars.end.roundOver) {
+                    roundOver(now);
+                }
             }
+            setImmediate(gameloop, tickRate);
+        }else {
+            stopGameLoop();
         }
-        setImmediate(gameloop, frameRate);
-	}else {
-        stopGameLoop();
-    }
+      })
+      .catch(console.log);
 }
 
 function addMovement(id, data) {

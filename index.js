@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
 			socket.broadcast.emit('chatMessage', {message: game.players[socket.id].name + ' has disconnected'});
 			game.removePlayer(socket.id);
 		}
-		io.emit('disconnect', socket.id);
+		io.emit('pdisconnect', socket.id);
 	});
 	socket.on('playerMovement', function(data) {
 		if(typeof game.players[socket.id] !== 'undefined') {

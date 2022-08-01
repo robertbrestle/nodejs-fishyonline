@@ -7,30 +7,30 @@ GameJS = {
 				return;
 			}
 			//wasd = 87, 65, 83, 68
-			switch(e.keyCode) {
-				case 87:
-				case 38:
+			switch(e.code) {
+				case 'KeyW':
+				case 'ArrowUp':
 					e.preventDefault();
 					wasd[0] = true;
 					break;
-				case 83:
-				case 40:
+				case 'KeyS':
+				case 'ArrowDown':
 					e.preventDefault();
 					wasd[2] = true;
 					break;
-				case 65:
-				case 37:
+				case 'KeyA':
+				case 'ArrowLeft':
 					e.preventDefault();
 					wasd[1] = true;
 					player.isLeft = true;
 					break;
-				case 68:
-				case 39:
+				case 'KeyD':
+				case 'ArrowRight':
 					e.preventDefault();
 					wasd[3] = true;
 					player.isLeft = false;
 					break;
-				case 32:	// space - special ability
+				case 'Space':	// space - special ability
 					e.preventDefault();
 					playSound(clank);
 					// TODO: add timeout
@@ -56,7 +56,7 @@ GameJS = {
 					}
 					break;
 				default:
-					console.log(e.keyCode);
+					console.log(e.code);
 					break;
 			}
 		}, false);
@@ -67,21 +67,21 @@ GameJS = {
 				return;
 			}
 			//wasd = 87, 65, 83, 68
-			switch(e.keyCode) {
-				case 87:
-				case 38:
+			switch(e.code) {
+				case 'KeyW':
+				case 'ArrowUp':
 					wasd[0] = false;
 					break;
-				case 83:
-				case 40:
+				case 'KeyS':
+				case 'ArrowDown':
 					wasd[2] = false;
 					break;
-				case 65:
-				case 37:
+				case 'KeyA':
+				case 'ArrowLeft':
 					wasd[1] = false;
 					break;
-				case 68:
-				case 39:
+				case 'KeyD':
+				case 'ArrowRight':
 					wasd[3] = false;
 					break;
 				default:
@@ -92,8 +92,8 @@ GameJS = {
 		// hit ESC from the chatbox to focus on the screen
 		document.getElementById('chatinput')
 				.addEventListener('keydown', function(e) {
-			switch(e.keyCode) {
-				case 27: // ESC
+			switch(e.code) {
+				case 'Escape': // ESC
 					document.activeElement.blur();
 					break;
 				default:
@@ -176,6 +176,14 @@ GameJS = {
 	// movement and collision
 	collision:function() {
 
+		// move enemies
+		for(let i = 0; i < enemies.length; i++) {
+			if(enemies[i].delay == 0) {
+				enemies[i].x += enemies[i].speed;
+			}
+		}
+
+		// player movement
 		if(player.team === 'clam' || (player.team === 'jelly' && player.isPolyp)) {
 			return;
 		}

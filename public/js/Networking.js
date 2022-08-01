@@ -96,7 +96,7 @@ NetworkingJS = {
 
 
 		/* disconnections/errors */
-		socket.on('disconnect', function(pid) {
+		socket.on('pdisconnect', function(pid) {
 			if (pid === 'io server disconnect') {
 				alert('The server has restarted. Please refresh this page.');
 			}else {

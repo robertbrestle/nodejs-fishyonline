@@ -7,7 +7,9 @@ var reset = false;
 var io = null;
 var players = {};
 var enemies = [];
-var flakes = [];
+var flakes = {
+    list: []
+};
 
 var movementQueue = {};
 
@@ -16,9 +18,6 @@ var startTime, now, then, elapsed;
 then = Date.now();
 startTime = then;
 var tickRate = 1000 / 30;
-// limits the number of times
-var enemyTick = 0;
-var enemyTickMax = 10;
 
 var stageVars = {
     width: 900,
@@ -145,27 +144,30 @@ function command(cmd) {
         case 'addenemies':
             enemyVars.reduceTo += 5;
             addEnemy(5);
+            io.emit('enemies', enemies);
             break;
         case 'removeenemies':
             enemyVars.reduceTo -= 5;
             break;
         case 'screenclear':
+            // TODO: refactor
             enemies = [];
-            enemyVars.reduceTo = 10;
+            enemyVars.reduceTo = enemyVars.minNum;
             addEnemy(5);
-            flakes = [];
-            flakeVars.reduceTo = 20;
+            flakes = {list:[]};
+            flakeVars.reduceTo = flakeVars.maxNum;
             addFlake(20);
             Object.keys(players).forEach(function(p) {
                 if(enemies.length < enemyVars.maxNum) {
                     addEnemy(5);
                     enemyVars.reduceTo += 5;
+                    io.emit('enemies', enemies);
                 }
             });
             break;
         case 'fishfood':
-            flakeVars.reduceTo += 5;
-            addFlake(5);
+            flakeVars.reduceTo += 10;
+            addFlake(10);
             break;
         default:
             io.emit('chatMessage', {message: 'No command found'});
@@ -177,7 +179,7 @@ function validatePlayer(player) {
     // player info validation :^)
     var isValid = true;
 
-    if(typeof player.name === 'undefined' || player.name === '' || player.name.length >= playerVars.maxNameLength) {
+    if(typeof player.name === 'undefined' || player.name === '' || player.name.length > playerVars.maxNameLength) {
         isValid = false;
     }
     if(typeof player.team === 'undefined' || player.team === '' || teams.indexOf(player.team) === -1) {
@@ -209,12 +211,16 @@ function addPlayer(id, name, team, color) {
     if(enemies.length < enemyVars.maxNum) {
         addEnemy(5);
         enemyVars.reduceTo += 5;
-        io.emit('enemies', enemies);
     }
+    io.emit('enemies', enemies);
+    io.emit('flakes', thinFlakes());
 }
 
 function removePlayer(id) {
     enemyVars.reduceTo -= 5;
+    if(enemies.length < enemyVars.minNum) {
+        enemyVars.reduceTo = enemyVars.minNum;
+    }
     if(typeof players[id] !== 'undefined') {
         delete players[id];
     }
@@ -226,6 +232,7 @@ function addEnemy(qty, index, spawnRare) {
     // remove enemy if reduceTo < enemies.length
     if(typeof index !== 'undefined' && enemyVars.reduceTo < enemies.length) {
         enemies.splice(index, 1);
+        io.emit('enemies', enemies);
         return;
     }
 
@@ -290,8 +297,8 @@ function addEnemy(qty, index, spawnRare) {
 function addFlake(qty, index, location) {
 
     // remove enemy if reduceTo < enemies.length
-    if(typeof index !== 'undefined' && flakeVars.reduceTo < flakes.length) {
-        flakes.splice(index, 1);
+    if(typeof index !== 'undefined' && flakeVars.reduceTo < flakes.list.length) {
+        flakes.list.splice(index, 1);
         return;
     }
 
@@ -323,15 +330,15 @@ function addFlake(qty, index, location) {
         flake.speed = flakeVars.speed;
 
         if(addQty === 1 && typeof index !== 'undefined') {
-            flakes[index].x = flake.x;
-            flakes[index].y = flake.y;
-            flakes[index].sizeX = flake.sizeX;
-            flakes[index].sizeY = flake.sizeY;
-            flakes[index].delay = flake.delay;
-            flakes[index].type = '';
+            flakes.list[index].x = flake.x;
+            flakes.list[index].y = flake.y;
+            flakes.list[index].sizeX = flake.sizeX;
+            flakes.list[index].sizeY = flake.sizeY;
+            flakes.list[index].delay = flake.delay;
+            flakes.list[index].type = '';
             flake.points = flake.points;
         }else {
-            flakes.push(helpers.clone(flake));
+            flakes.list.push(helpers.clone(flake));
         }
     }
 }
@@ -346,11 +353,12 @@ function startGameLoop(myIO) {
         isStarted = true;
         reset = false;
 
-        enemyVars.reduceTo = 10;
-        flakeVars.reduceTo = 20;
+        enemyVars.reduceTo = enemyVars.minNum;
+        flakeVars.reduceTo = 10;
 
         // init enemies
         addEnemy(5);
+        io.emit('enemies', enemies);
 
         Object.keys(players).forEach(function(p) {
             if(enemies.length < enemyVars.maxNum) {
@@ -369,7 +377,7 @@ function startGameLoop(myIO) {
 function stopGameLoop(isReset) {
     isStarted = false;
     enemies = [];
-    flakes = [];
+    flakes = {list:[]};
 
     // TODO: reset players (score + location)
     Object.keys(players).forEach(function(p) {
@@ -380,6 +388,8 @@ function stopGameLoop(isReset) {
         players[p].lastCollision = Date.now() - playerVars.collisionWait;
     });
     io.emit('players', players);
+    io.emit('enemies', enemies);
+    io.emit('flakes', thinFlakes());
 
     if(typeof isReset !== 'undefined' && isReset) {
         setTimeout(function() {
@@ -397,10 +407,14 @@ function collision() {
     var rightNow = Date.now();
 
     // enemies
+    let enemiesUpdated = false;
     for(var e = 0; e < enemies.length; e++) {
         var ce = enemies[e];
         if(ce.delay > 0) {
             ce.delay--;
+            if(ce.delay == 0) {
+                enemiesUpdated = true;
+            }
         }else {
             // move enemy
             ce.x += ce.speed;
@@ -408,15 +422,26 @@ function collision() {
             if((ce.speed > 0 && ce.x - ce.sizeX > stageVars.width) ||
                 (ce.speed < 0 && ce.x + ce.sizeX < 0)) {
                     addEnemy(1, e);
+                    enemiesUpdated = true
                     continue;
             }
             // if collision with enemy
             Object.keys(players).forEach(function(p) {
+                // ignore if clam/polyp
                 if(players[p].team === 'clam' || (players[p].team === 'jelly' && players[p].isPolyp)) {
                     return;
                 }
-                if((players[p].lastCollision + playerVars.collisionWait < rightNow) && 
-                    helpers.intersect(ce, players[p])) {
+                // ignore enemies on your team
+                if(players[p].color == ce.color) {
+                    return;
+                }
+                // ignore if player had recent collision action
+                if(players[p].lastCollision + playerVars.collisionWait >= rightNow) {
+                    return;
+                }
+                
+                // if initial intersection
+                if(helpers.intersect(ce, players[p])) {
 
                     // player is larger, consume enemy
                     if((players[p].team === 'jelly' && players[p].sizeY > ce.sizeX) || (players[p].team !== 'jelly' && players[p].sizeX > ce.sizeX)) {
@@ -428,30 +453,18 @@ function collision() {
                         }
                         players[p].score += enemyVars.points;
                         addEnemy(1, e);
+                        enemiesUpdated = true
                         addFishFlake(p, false);
                         checkWinCondition(p);
                     // enemy is larger - deduct points, reset position, broadcast
                     }else {
-                        players[p].x = Math.floor(stageVars.width/2 - (players[p].sizeX/2));
-                        players[p].y = stageVars.height - players[p].sizeY - 10;
-                        players[p].lastCollision = rightNow;
-                        players[p].score -= enemyVars.points;
-                        // player death time + collision wait = client to show invulnerable animation
-                        players[p].diedAt = rightNow + playerVars.collisionWait;
-
-                        var thinPlayerMove = {
-                            x: players[p].x,
-                            y: players[p].y,
-                            isLeft: players[p].isLeft,
-                            diedAt: players[p].diedAt
-                        };
-                        addMovement(p, thinPlayerMove);
-                        //io.emit('playerMoved', thinPlayerMove);
-
-                        var resp = {};
-                        resp.id = p;
-                        resp.message = players[p].name + '[' + (players[p].team === 'jelly' ? players[p].sizeY : players[p].sizeX) + '] was eaten by ' + ce.name + '[' + ce.sizeX + ']';
-                        io.emit('chatMessage', resp);
+                        if(ce.team == "fish") {
+                            if(helpers.intersectFishPlayer(ce, players[p])) {
+                                playerDeathReset(p, ce.name, ce.sizeX, rightNow);
+                            }
+                        }else {
+                            playerDeathReset(p, ce.name, ce.sizeX, rightNow);
+                        }
                     }
 
                     var thinPlayerScore = {
@@ -463,36 +476,56 @@ function collision() {
                     io.emit('playerScore', thinPlayerScore);
                 }
             });
+
+            // TODO: optimize; causes stuttering
+            /*
+            for(var ee = 0; ee < enemies.length; ee++) {
+                if(e != ee) {
+                    var cee = enemies[ee];
+                    if(ce.color != cee.color && helpers.intersect(ce, cee)) {
+                        if(ce.sizeX > cee.sizeX) {
+                            addEnemy(1, ee);
+                            addFishFlake(ce, false);
+                            io.emit('enemies', enemies);
+                            enemyTick = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            */
         }
-    }
-    // send enemies every (tickRate * enemyTickMax)
-    enemyTick++;
-    if(enemyTick >= enemyTickMax) {
-        enemyTick = 0;
+    }//for enemies
+    if(enemiesUpdated) {
         io.emit('enemies', enemies);
     }
 
 
     // flakes
-    for(var f = 0; f < flakes.length; f++) {
-        var cf = flakes[f];
+    let flakesUpdated = false;
+    for(var f = 0; f < flakes.list.length; f++) {
+        var cf = flakes.list[f];
         if(cf.delay > 0) {
             cf.delay--;
+            if(cf.delay == 0) {
+                flakesUpdated = true;
+            }
         }else {
             // move enemt
             cf.y += cf.speed;
             // if OOB
             if(cf.y > stageVars.height) {
                 addFlake(1, f);
+                flakesUpdated = true;
                 continue;
             }
             // if collision with enemy
             //for(int p = 0; p < Object.keys(players).length; p++) {
             Object.keys(players).forEach(function(p) {
-                if(typeof flakes[f] === 'undefined') {
+                if(typeof flakes.list[f] === 'undefined') {
                     return;
                 }
-                if(players[p].team === flakes[f].type) {
+                if(players[p].team === flakes.list[f].type) {
                     return;
                 }
                 if(players[p].team !== 'clam' && (players[p].sizeY >= flakeVars.flakeMaxSizeY || players[p].sizeX >= flakeVars.flakeMaxSizeX)) {
@@ -505,9 +538,10 @@ function collision() {
                             players[p].sizeX++;
                             players[p].sizeY = Math.floor(players[p].sizeX * playerVars[players[p].team].scale);
                         }
-                        players[p].score += flakes[f].points;
+                        players[p].score += flakes.list[f].points;
 
                         addFlake(1, f);
+                        flakesUpdated = true;
                         var thinPlayerScore = {
                             id: p,
                             sizeX: players[p].sizeX,
@@ -519,9 +553,34 @@ function collision() {
                 }
             });
         }
+    }//for
+    if(flakesUpdated) {
+        io.emit('flakes', thinFlakes());
     }
-    io.emit('flakes', thinFlakes());
 }//collision
+
+function playerDeathReset(playerId, killerName, killerSize, rightNowTime) {
+    players[playerId].x = Math.floor(stageVars.width/2 - (players[playerId].sizeX/2));
+    players[playerId].y = stageVars.height - players[playerId].sizeY - 10;
+    players[playerId].lastCollision = rightNowTime;
+    players[playerId].score -= enemyVars.points;
+    // player death time + collision wait = client to show invulnerable animation
+    players[playerId].diedAt = rightNowTime + playerVars.collisionWait;
+
+    var thinPlayerMove = {
+        x: players[playerId].x,
+        y: players[playerId].y,
+        isLeft: players[playerId].isLeft,
+        diedAt: players[playerId].diedAt
+    };
+    addMovement(playerId, thinPlayerMove);
+    //io.emit('playerMoved', thinPlayerMove);
+
+    var resp = {};
+    resp.id = playerId;
+    resp.message = players[playerId].name + '[' + (players[playerId].team === 'jelly' ? players[playerId].sizeY : players[playerId].sizeX) + '] was eaten by ' + killerName + '[' + killerSize + ']';
+    io.emit('playerDeath', resp);
+}//playerDeathReset
 
 // use combination of setImmediate delay + delta time for smoothness
 function gameloop() {
@@ -568,12 +627,16 @@ function movement() {
 }
 
 function thinFlakes() {
-    var tf = [];
-    flakes.forEach(function(f) {
-        tf.push({
+    var tf = {
+        list: [],
+        speed: flakeVars.speed
+    };
+    flakes.list.forEach(function(f) {
+        tf.list.push({
             x: f.x,
             y: f.y,
-            size: f.sizeX
+            size: f.sizeX,
+            delay: f.delay
         });
     });
     return tf;
@@ -586,6 +649,7 @@ function addFishFlake(id, reduceSize) {
             y: players[id].y + (players[id].sizeY / 2)
         };
         addFlake(1, undefined, location);
+        io.emit('flakes', thinFlakes());
 
         if(typeof reduceSize !== 'undefined' && reduceSize) {
             players[id].sizeX--;

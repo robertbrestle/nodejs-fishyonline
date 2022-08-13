@@ -107,8 +107,8 @@ GameUIJS = {
         }
         var v = Number(framerateInput);
         if(v > 0) {
-            fps = v;
-            frameRate = 1000/v;
+            renderTick = v;
+            renderTickRate = 1000 / v;
         }
     }
 };

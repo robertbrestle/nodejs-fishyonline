@@ -1,4 +1,5 @@
-var wasd = [false, false, false, false];
+// up, left, down, right, space
+var wasd = [false, false, false, false, false];
 
 var player = {
 	id: '0',
@@ -17,7 +18,6 @@ var player = {
 	isLeft: false,
 	isPolyp: true,
 	animationSpeed: 1000,
-	animationLast: Date.now(),
 	deathFlicker: 0,
 	deathFlickerMax: 4,
 	fish: {
@@ -47,10 +47,11 @@ var player = {
 		screenTop: 0,
 		polypMaxY: 550,
 		veloMax: 1,
-		veloInc: 0.1,
-		veloDec: 0.2
+		veloInc: 0.2,
+		veloDec: 0
 	}
 };
+// server players
 var players = {};
 
 var colors = ["orange", "blue", "green", "purple", "black", "red"];
@@ -137,27 +138,27 @@ var teams = {
 		animationFrames: 1,
 		orange: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("orange_jelly"),
 		},
 		blue: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("blue_jelly"),
 		},
 		green: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("green_jelly"),
 		},
 		purple: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("purple_jelly"),
 		},
 		black: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("black_jelly"),
 		},
 		red: {
 			polyp: document.getElementById("yellow_polyp"),
-			jelly: document.getElementById("yellow_jelly"),
+			jelly: document.getElementById("red_jelly"),
 		}
 	}
 };
@@ -191,7 +192,9 @@ var canvas = document.getElementById('stage');
 var ctx = {};
 
 var enemies = [];
-var flakes = [];
+var flakes = {
+	list: []
+};
 
 //var ding = new Audio('sounds/ding.wav');
 //var bird = new Audio('sounds/bird.wav');
@@ -200,21 +203,27 @@ var flakes = [];
 
 var scoreFont = "24px Verdana";
 
-// regulate fps
-var tick = 30;
-var fps = 60;
-//var fpsInterval, startTime, now, then, elapsed;
-//then = Date.now();
-//startTime = then;
+// regulate ticks
+var networkTick = 30;
+var collisionTick = 60;
+var renderTick = 60;
+var secondTick = 1;
 
-var tickRate = 1000/tick;
-var frameRate = 1000/fps;
+var networkTickRate = 1000/networkTick;
+var collisionTickRate = 1000/collisionTick;
+var renderTickRate = 1000/renderTick;
+var secondTickRate = 1000/secondTick;
+
 var aStartTime = 0;
-var aCurrentFrame = 0, aLastFrame = 0, aDeltaFrame = 0;
-var aCurrentTick = 0, aLastTick = 0, aDeltaTick = 0;
+var currentNetworkTick = 0, lastNetworkTick = 0, deltaNetworkTick = 0;
+var currentCollisionTick = 0, lastCollisionTick = 0, deltaCollisionTick = 0;
+var currentRenderTick = 0, lastRenderTick = 0, deltaRenderTick = 0;
+var currentSecondTick = 0, lastSecondTick = 0, deltaSecondTick = 0;
 
 // networking
 var socket = null;
+var pingStart = new Date();
+var ping = 0;
 
 // audio
 var ding = new Audio('audio/ding.wav');

@@ -2,7 +2,35 @@
 All notable changes to this project will be documented in this file.  
   
 ## [Unreleased]  
-  
+
+## [0.1.2] - 2022-08-13  
+### Added  
+- ping display  
+- creatures of the same color cannot consume each other  
+- new sprites for jellyfish  
+- new sprites for blue and red fish  
+- spacebar tracking in `wasd`  
+- new `playerDeath` event  
+  - resets player velocity and jellyfish back to polyps  
+- new epic fish names  
+
+### Changed  
+- moved supporting server files to `src/`  
+- separated ticks to manage:  
+  - networking  
+  - collision  
+  - rendering  
+  - second (animation/ping/etc)  
+- refactored networking for flakes and enemies  
+  - client will render them based position and speed  
+  - server will only send on relevant update events  
+  - from +30 calls/second to 1-4 calls/second for each  
+- jellyfish movement is now more fluid, with no automatic velocity degradation  
+
+### Fixed  
+- having a name length of `playerVars.maxNameLength` causes the game not to start  
+- if multiple people disconnect, `removePlayer()` could remove all enemies from the game  
+
 ## [0.1.1] - 2022-08-01  
 ### Added  
 - CHANGELOG.md  

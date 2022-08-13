@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
-const game = require('./game.js');
+const game = require('./src/game.js');
 
 app.use(express.static(__dirname + '/public'));
 app.get('/', (req, res) => {
@@ -70,6 +70,9 @@ io.on('connection', (socket) => {
 			resp.id = socket.id;
 			io.emit('chatMessage', resp);
 		}
+	});
+	socket.on('ping', (callback) => {
+		callback();
 	});
 });
 

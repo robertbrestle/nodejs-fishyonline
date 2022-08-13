@@ -32,27 +32,30 @@ GameJS = {
 					break;
 				case 'Space':	// space - special ability
 					e.preventDefault();
-					playSound(clank);
-					// TODO: add timeout
-					switch(player.team) {
-						case 'jelly':
-							if(player.isPolyp || player.y + player.sizeY >= player[player.team].polypMaxY) {
-								player.isPolyp = !player.isPolyp;
-								player.veloX = 0;
-								player.veloY = 0;
-								var thinPlayer = {
-									isPolyp: player.isPolyp
-								};
-								socket.emit('playerState', thinPlayer);
-							}
-							break;
-						case 'fish':
-							if(player.sizeX > 1) {
-								socket.emit('playerPoop');
-							}
-							break;
-						default:
-							break;
+					if(!wasd[4]) {
+						wasd[4] = true;
+						playSound(clank);
+						// TODO: add timeout
+						switch(player.team) {
+							case 'jelly':
+								if(player.isPolyp || player.y + player.sizeY >= player[player.team].polypMaxY) {
+									player.isPolyp = !player.isPolyp;
+									player.veloX = 0;
+									player.veloY = 0;
+									var thinPlayer = {
+										isPolyp: player.isPolyp
+									};
+									socket.emit('playerState', thinPlayer);
+								}
+								break;
+							case 'fish':
+								if(player.sizeX > 1) {
+									socket.emit('playerPoop');
+								}
+								break;
+							default:
+								break;
+						}
 					}
 					break;
 				default:
@@ -83,6 +86,9 @@ GameJS = {
 				case 'KeyD':
 				case 'ArrowRight':
 					wasd[3] = false;
+					break;
+				case 'Space':
+					wasd[4] = false;
 					break;
 				default:
 					break;
@@ -118,7 +124,7 @@ GameJS = {
 		canvas.background.src = 'img/background.png';
 
 		canvas.sand_background = new Image();
-		canvas.sand_background.src = 'img/sand_background2.png';
+		canvas.sand_background.src = 'img/sand_background.png';
 		
 		// reset arrays
 		enemies = [];
@@ -129,7 +135,7 @@ GameJS = {
 		player.veloX = 0;
 		player.veloY = 0;
 		player.isLeft = false;
-		wasd = [false, false, false, false];
+		wasd = [false, false, false, false, false];
 
 		// focus on <body> to enable keyboard movement
 		document.activeElement.blur();
@@ -143,27 +149,40 @@ GameJS = {
 	}
 	,
 	main:function(time) {
-		// significantly smoother than Date.now() - long live frame drops!
-		//aCurrentFrame = Math.round((time - aStartTime) / frameRate);
-		//aDeltaTime = (aCurrentFrame - aLastFrame) * frameRate;
-		//aLastFrame = aCurrentFrame;
+		// this causes stuttering
+		//var timeDelta = time - aStartTime;
+		
+		// network
+		currentNetworkTick = Math.round((time - aStartTime) / networkTickRate);
+		deltaNetworkTick = (currentNetworkTick - lastNetworkTick) * networkTickRate;
+		lastNetworkTick = currentNetworkTick;
+		// collision
+		currentCollisionTick = Math.round((time - aStartTime) / collisionTickRate);
+		deltaCollisionTick = (currentCollisionTick - lastCollisionTick) * collisionTickRate;
+		lastCollisionTick = currentCollisionTick;
+		// draw
+		currentRenderTick = Math.round((time - aStartTime) / renderTickRate);
+		deltaRenderTick = (currentRenderTick - lastRenderTick) * renderTickRate;
+		lastRenderTick = currentRenderTick;
+		// second
+		currentSecondTick = Math.round((time - aStartTime) / secondTickRate);
+		deltaSecondTick = (currentSecondTick - lastSecondTick) * secondTickRate;
+		lastSecondTick = currentSecondTick;
+		
 
-		aCurrentTick = Math.round((time - aStartTime) / tickRate);
-		aDeltaTick = (aCurrentTick - aLastTick) * tickRate;
-		aLastTick = aCurrentTick;
-
-		aCurrentFrame = Math.round((time - aStartTime) / frameRate);
-		aDeltaFrame = (aCurrentFrame - aLastFrame) * frameRate;
-		aLastFrame = aCurrentFrame;
-
-
-		if(aDeltaTick > 0) {
-			GameJS.collision();
+		if(deltaNetworkTick > 0) {
 			GameJS.network();
-			GameJS.animation();
+			GameJS.networkCollision();
 		}
-		if(aDeltaFrame > 0) {
+		if(deltaCollisionTick > 0) {
+			GameJS.collision();
+		}
+		if(deltaRenderTick > 0) {
 			GameJS.draw();
+		}
+		if(deltaSecondTick > 0) {
+			GameJS.ping();
+			GameJS.animation();
 		}
 
 		requestAnimationFrame(GameJS.main);
@@ -175,13 +194,6 @@ GameJS = {
 
 	// movement and collision
 	collision:function() {
-
-		// move enemies
-		for(let i = 0; i < enemies.length; i++) {
-			if(enemies[i].delay == 0) {
-				enemies[i].x += enemies[i].speed;
-			}
-		}
 
 		// player movement
 		if(player.team === 'clam' || (player.team === 'jelly' && player.isPolyp)) {
@@ -268,7 +280,21 @@ GameJS = {
 		}
 	}// collision
 	,
-
+	networkCollision:function() {
+		// move enemies
+		for(let i = 0; i < enemies.length; i++) {
+			if(enemies[i].delay == 0) {
+				enemies[i].x += enemies[i].speed;
+			}
+		}
+		// move flakes
+		for(let i = 0; i < flakes.list.length; i++) {
+			if(flakes.list[i].delay <= 0) {
+				flakes.list[i].y += flakes.speed;
+			}
+		}
+	}//networkCollision
+	,
 
 	// -------------------------------------
 	draw:function() {
@@ -276,7 +302,37 @@ GameJS = {
 		ctx.drawImage(canvas.background, 0, 0, canvas.width, canvas.height);
 		ctx.drawImage(canvas.sand_background, 0, 550, canvas.width, 150);
 		//ctx.fillRect(0, 550, 700, 700);
-		
+
+		// draw flakes
+		flakes.list.forEach(function(f) {
+			//ctx.drawImage(e.speed < 0 ? fishes['orange'].left : fishes['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
+			ctx.fillRect(f.x, f.y, f.size, f.size);
+		});
+
+		// draw enemies
+		enemies.forEach(function(e) {
+			if(e.team === 'fish') {
+				ctx.drawImage(e.speed < 0 ? teams[e.team][e.color].left : teams[e.team][e.color].right, e.x, e.y, e.sizeX, e.sizeY);
+			}else {
+				ctx.drawImage(teams[e.team][e.color][teams[e.team].animationFrame], e.x, e.y, e.sizeX, e.sizeY);
+			}
+		});
+
+		// draw other players
+		Object.keys(players).forEach(function(p) {
+			if(socket.id !== p && typeof players[p] !== 'undefined') {
+				var v = players[p];
+				if(v.team === 'jelly') {
+					ctx.drawImage(v.isPolyp ? teams[v.team][v.color].polyp : teams[v.team][v.color].jelly, v.x, v.y, v.sizeX, v.sizeY);
+				}else if(v.team === 'fish') {
+					ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
+				}else {
+					ctx.drawImage(teams[v.team][v.color][teams[v.team].animationFrame], v.x, v.y, v.sizeX, v.sizeY);
+				}
+				ctx.fillText(v.name, v.x + v.sizeX/2 - (v.name.length * 3), v.y - 5);
+			}
+		});
+
 		// draw player
 		// TODO: fix death animation
 		if(player.deathFlicker === 0) {
@@ -294,34 +350,7 @@ GameJS = {
 			player.deathFlicker--;
 		}
 		ctx.fillText(player.name, player.x + player.sizeX/2 - (player.name.length * 3) , player.y - 5);
-		
-		Object.keys(players).forEach(function(p) {
-			if(socket.id !== p && typeof players[p] !== 'undefined') {
-				var v = players[p];
-				if(v.team === 'jelly') {
-					ctx.drawImage(v.isPolyp ? teams[v.team][v.color].polyp : teams[v.team][v.color].jelly, v.x, v.y, v.sizeX, v.sizeY);
-				}else if(v.team === 'fish') {
-					ctx.drawImage(v.isLeft ? teams[v.team][v.color].left : teams[v.team][v.color].right, v.x, v.y, v.sizeX, v.sizeY);
-				}else {
-					ctx.drawImage(teams[v.team][v.color][teams[v.team].animationFrame], v.x, v.y, v.sizeX, v.sizeY);
-				}
-				ctx.fillText(v.name, v.x + v.sizeX/2 - (v.name.length * 3), v.y - 5);
-			}
-		});
-
-		enemies.forEach(function(e) {
-			if(e.team === 'fish') {
-				ctx.drawImage(e.speed < 0 ? teams[e.team][e.color].left : teams[e.team][e.color].right, e.x, e.y, e.sizeX, e.sizeY);
-			}else {
-				ctx.drawImage(teams[e.team][e.color][teams[e.team].animationFrame], e.x, e.y, e.sizeX, e.sizeY);
-			}
-		});
-
-		flakes.forEach(function(f) {
-			//ctx.drawImage(e.speed < 0 ? fishes['orange'].left : fishes['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
-			ctx.fillRect(f.x, f.y, f.size, f.size);
-		});
-	}
+	}//draw
 	,
 	network:function() {
 		if(player.x != player.lastX || player.y != player.lastY) {
@@ -335,19 +364,24 @@ GameJS = {
 			player.lastX = player.x;
 			player.lastY = player.y;
 		}
-	}
+	}//network
+	,
+	ping:function() {
+		pingStart = Date.now();
+		socket.emit('ping', () => {
+			ping = Date.now() - pingStart;
+			document.getElementById("pingDisplay").textContent = ping;
+		});
+	}//ping
 	,
 	animation:function() {
-		let now = Date.now();
 		Object.keys(teams).forEach(function(t) {
-			if(teams[t].animationFrames > 1 && player.animationLast + player.animationSpeed < now) {
+			if(teams[t].animationFrames > 1) {
 				teams[t].animationFrame++;
 				if(teams[t].animationFrame === teams[t].animationFrames) {
 					teams[t].animationFrame = 0;
 				}
-				player.animationLast = now;
 			}
 		});
-		
-	}
+	}//animation
 };

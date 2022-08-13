@@ -63,7 +63,6 @@ NetworkingJS = {
 				players[ps.id].sizeX = ps.sizeX;
 				players[ps.id].sizeY = ps.sizeY;
 				players[ps.id].score = ps.score;
-
 				// update self if dead
 				if(socket.id === ps.id) {
 					player.sizeX = ps.sizeX;
@@ -79,10 +78,25 @@ NetworkingJS = {
 		socket.on('playerState', function(ps) {
 			if(typeof ps.id !== 'undefined') {
 				players[ps.id].isPolyp = ps.isPolyp;
-
 				// update self
 				if(socket.id === ps.id) {
-					player.isPolyp = players[ps.id].isPolyp;
+					player.isPolyp = ps.isPolyp;
+				}
+			}
+		});
+		socket.on('playerDeath', function(pd) {
+			if(typeof pd.id !== 'undefined' && typeof pd.message !== 'undefined') {
+				GameUIJS.appendChatMessage(pd.message, pd.id);
+				if(socket.id === pd.id) {
+					player.veloX = 0;
+					player.veloY = 0;
+					if(player.team == "jelly" && !player.isPolyp) {
+						// change to polyp, send to server
+						player.isPolyp = !player.isPolyp;
+						socket.emit('playerState', {
+							isPolyp: player.isPolyp
+						});
+					}
 				}
 			}
 		});
@@ -93,7 +107,6 @@ NetworkingJS = {
 		socket.on('flakes', function(fo) {
 			flakes = fo;
 		});
-
 
 		/* disconnections/errors */
 		socket.on('pdisconnect', function(pid) {

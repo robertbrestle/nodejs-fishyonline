@@ -9,8 +9,8 @@
 <body>
 <div style="display:none;">
 	<!-- fish -->
-	<img id="orange_right" src="img/orange_right2.png"/>
-	<img id="orange_left" src="img/orange_left2.png"/>
+	<img id="orange_right" src="img/orange_right.png"/>
+	<img id="orange_left" src="img/orange_left.png"/>
 	<img id="blue_right" src="img/blue_right.png"/>
 	<img id="blue_left" src="img/blue_left.png"/>
 	<img id="green_right" src="img/green_right.png"/>
@@ -19,8 +19,8 @@
 	<img id="purple_left" src="img/purple_left.png"/>
 	<img id="black_right" src="img/black_right.png"/>
 	<img id="black_left" src="img/black_left.png"/>
-	<img id="red_right" src="img/red_right.png"/>
-	<img id="red_left" src="img/red_left.png"/>
+	<img id="red_right" src="img/red_right1.png"/>
+	<img id="red_left" src="img/red_left1.png"/>
 	<!-- crab -->
 	<img id="orange_crab" src="img/orange_crab.png"/>
 	<img id="orange_crab1" src="img/orange_crab1.png"/>
@@ -38,7 +38,13 @@
 	<img id="purple_clam" src="img/clam.png"/>
 	<!-- polyp+jelly -->
 	<img id="yellow_polyp" src="img/polyp_yellow.png"/>
-	<img id="yellow_jelly" src="img/jelly_yellow.png"/>
+	<!--<img id="yellow_jelly" src="img/jelly_yellow.png"/>-->
+	<img id="black_jelly" src="img/jelly_black.png"/>
+	<img id="blue_jelly" src="img/jelly_blue.png"/>
+	<img id="green_jelly" src="img/jelly_green.png"/>
+	<img id="orange_jelly" src="img/jelly_orange.png"/>
+	<img id="purple_jelly" src="img/jelly_purple.png"/>
+	<img id="red_jelly" src="img/jelly_red.png"/>
 
 	<!-- music -->
 	<audio id="music">
@@ -95,6 +101,10 @@
 				<b>Players:</b>
 				<span id="totalPlayers">0</span>
 			</div>
+			<div>
+				<span>Ping:&nbsp;</span>
+				<span id="pingDisplay">0</span>
+			</div>
 			<hr>
 			<div id="connectedPlayers"></div>
 		</div>
@@ -134,6 +144,8 @@
 			<option>40</option>
 			<option>50</option>
 			<option selected>60</option>
+			<option>120</option>
+			<option>144</option>
 		</select>
 		<span class="tooltip">The game's drawing speed; not your browser's framerate<br>Decreasing this value may reduce stuttering<br>Setting this too low will enable slideshow mode<br>Default: 60</span>
 	</div>

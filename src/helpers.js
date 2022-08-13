@@ -15,7 +15,22 @@ function intersect(p1, p2) {
              p1.y + p1.sizeY < p2.y);
 }
 
+function intersectFishPlayer(f, p) {
+    if(f.speed < 0) {
+        return !(f.x > p.x + p.sizeX ||
+                 f.x + f.sizeX/3 < p.x ||
+                 f.y > p.y + p.sizeY ||
+                 f.y + f.sizeY < p.y);
+    }else {
+        return !(f.x + f.sizeX - f.sizeX/3 > p.x + p.sizeX ||
+                 f.x + f.sizeX < p.x ||
+                 f.y > p.y + p.sizeY ||
+                 f.y + f.sizeY < p.y);
+    }
+}
+
 module.exports = {
     clone,
-    intersect
+    intersect,
+    intersectFishPlayer
 };

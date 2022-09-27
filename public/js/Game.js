@@ -288,9 +288,9 @@ GameJS = {
 			}
 		}
 		// move flakes
-		for(let i = 0; i < flakes.list.length; i++) {
-			if(flakes.list[i].delay <= 0) {
-				flakes.list[i].y += flakes.speed;
+		for(let i = 0; i < flakes.length; i++) {
+			if(flakes[i].delay <= 0) {
+				flakes[i].y += flakeVars.speed;
 			}
 		}
 	}//networkCollision
@@ -304,8 +304,7 @@ GameJS = {
 		//ctx.fillRect(0, 550, 700, 700);
 
 		// draw flakes
-		flakes.list.forEach(function(f) {
-			//ctx.drawImage(e.speed < 0 ? fishes['orange'].left : fishes['orange'].right, e.x, e.y, e.sizeX, e.sizeY);
+		flakes.forEach(function(f, id) {
 			ctx.fillRect(f.x, f.y, f.size, f.size);
 		});
 

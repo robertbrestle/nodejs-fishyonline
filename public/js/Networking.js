@@ -87,6 +87,8 @@ NetworkingJS = {
 		socket.on('playerDeath', function(pd) {
 			if(typeof pd.id !== 'undefined' && typeof pd.message !== 'undefined') {
 				GameUIJS.appendChatMessage(pd.message, pd.id);
+				players[pd.id].score = pd.score;
+				GameUIJS.updateConnectedPlayers();
 				if(socket.id === pd.id) {
 					player.veloX = 0;
 					player.veloY = 0;
@@ -100,9 +102,15 @@ NetworkingJS = {
 				}
 			}
 		});
+		socket.on('enemy', function(eo) {
+			enemies[eo.id] = eo.enemy;
+		});
 		socket.on('enemies', function(eo) {
 			enemies = eo;
 			GameUIJS.updateNumberEnemies();
+		});
+		socket.on('flake', function(fo) {
+			flakes[fo.id] = fo.flake;
 		});
 		socket.on('flakes', function(fo) {
 			flakes = fo;

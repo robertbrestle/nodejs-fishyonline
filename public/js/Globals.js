@@ -183,6 +183,10 @@ var enemy = {
 	img: 'man'
 };
 
+var flakeVars = {
+	speed: 1
+};
+
 var settings = {
 	soundEnabled: true
 };
@@ -192,9 +196,7 @@ var canvas = document.getElementById('stage');
 var ctx = {};
 
 var enemies = [];
-var flakes = {
-	list: []
-};
+var flakes = [];
 
 //var ding = new Audio('sounds/ding.wav');
 //var bird = new Audio('sounds/bird.wav');

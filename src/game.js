@@ -7,9 +7,7 @@ var reset = false;
 var io = null;
 var players = {};
 var enemies = [];
-var flakes = {
-    list: []
-};
+var flakes = [];
 
 var movementQueue = {};
 
@@ -43,7 +41,7 @@ var playerVars = {
         minSizeX: 10,
         maxSizeX: 150,
         scale: 0.5,
-        spawnTop: 0,
+        spawnTop: 90,
         spawnBottom: 525,
         minSpeed: 1,
 	    maxSpeed: 7
@@ -83,7 +81,7 @@ var playerVars = {
 
 var enemyVars = {
     minNum: 10,
-    maxNum: 30,
+    maxNum: 35,
     reduceTo: 10,
     incNum: 5,
 	minX: 10,
@@ -140,6 +138,7 @@ function command(cmd) {
             break;
         case 'bigfish':
             addEnemy(1, undefined, true);
+            io.emit('enemies', enemies);
             break;
         case 'addenemies':
             enemyVars.reduceTo += 5;
@@ -154,16 +153,16 @@ function command(cmd) {
             enemies = [];
             enemyVars.reduceTo = enemyVars.minNum;
             addEnemy(5);
-            flakes = {list:[]};
+            flakes = [];
             flakeVars.reduceTo = flakeVars.maxNum;
             addFlake(20);
             Object.keys(players).forEach(function(p) {
                 if(enemies.length < enemyVars.maxNum) {
                     addEnemy(5);
                     enemyVars.reduceTo += 5;
-                    io.emit('enemies', enemies);
                 }
             });
+            io.emit('enemies', enemies);
             break;
         case 'fishfood':
             flakeVars.reduceTo += 10;
@@ -197,10 +196,11 @@ function addPlayer(id, name, team, color) {
         name: name.slice(0,playerVars.maxNameLength),
         color: color,
         team: team,
-        x: Math.floor(Math.random() * Math.floor(stageVars.width/2)) + Math.floor(stageVars.width/4),
-        y: Math.floor((Math.random() * (playerVars[team].spawnBottom - playerVars[team].spawnTop)) + playerVars[team].spawnTop),
         sizeX: playerVars[team].sizeX,
         sizeY: playerVars[team].sizeY,
+        x: Math.floor(Math.random() * Math.floor(stageVars.width/2)) + Math.floor(stageVars.width/4),
+        //y: Math.floor((Math.random() * (playerVars[team].spawnBottom - playerVars[team].spawnTop)) + playerVars[team].spawnTop),
+        y: playerVars[team].spawnTop - playerVars[team].sizeY,
         isLeft: playerVars.isLeft,
         isPolyp: playerVars.isPolyp,
         score: 0,
@@ -213,12 +213,12 @@ function addPlayer(id, name, team, color) {
         enemyVars.reduceTo += 5;
     }
     io.emit('enemies', enemies);
-    io.emit('flakes', thinFlakes());
+    sendThinFlakes();
 }
 
 function removePlayer(id) {
     enemyVars.reduceTo -= 5;
-    if(enemies.length < enemyVars.minNum) {
+    if(enemies.reduceTo < enemyVars.minNum) {
         enemyVars.reduceTo = enemyVars.minNum;
     }
     if(typeof players[id] !== 'undefined') {
@@ -228,7 +228,6 @@ function removePlayer(id) {
 
 
 function addEnemy(qty, index, spawnRare) {
-
     // remove enemy if reduceTo < enemies.length
     if(typeof index !== 'undefined' && enemyVars.reduceTo < enemies.length) {
         enemies.splice(index, 1);
@@ -288,6 +287,7 @@ function addEnemy(qty, index, spawnRare) {
             enemies[index].delay = enemy.delay;
             enemies[index].name = enemy.name;
             enemies[index].color = enemy.color;
+            sendSingleEnemy(index);
         }else {
             enemies.push(helpers.clone(enemy));
         }
@@ -295,10 +295,10 @@ function addEnemy(qty, index, spawnRare) {
 }
 
 function addFlake(qty, index, location) {
-
-    // remove enemy if reduceTo < enemies.length
-    if(typeof index !== 'undefined' && flakeVars.reduceTo < flakes.list.length) {
-        flakes.list.splice(index, 1);
+    // remove flake if reduceTo < flakes.length
+    if(typeof index !== 'undefined' && flakeVars.reduceTo < flakes.length) {
+        flakes.splice(index, 1);
+        sendThinFlakes();
         return;
     }
 
@@ -327,18 +327,19 @@ function addFlake(qty, index, location) {
             flake.type = '';
             flake.points = flakeVars.points;
         }
-        flake.speed = flakeVars.speed;
+        //flake.speed = flakeVars.speed;
 
         if(addQty === 1 && typeof index !== 'undefined') {
-            flakes.list[index].x = flake.x;
-            flakes.list[index].y = flake.y;
-            flakes.list[index].sizeX = flake.sizeX;
-            flakes.list[index].sizeY = flake.sizeY;
-            flakes.list[index].delay = flake.delay;
-            flakes.list[index].type = '';
-            flake.points = flake.points;
+            flakes[index].x = flake.x;
+            flakes[index].y = flake.y;
+            flakes[index].sizeX = flake.sizeX;
+            flakes[index].sizeY = flake.sizeY;
+            flakes[index].delay = flake.delay;
+            flakes[index].type = '';
+            flakes[index].points = flake.points;
+            sendSingleFlake(i);
         }else {
-            flakes.list.push(helpers.clone(flake));
+            flakes.push(helpers.clone(flake));
         }
     }
 }
@@ -358,7 +359,6 @@ function startGameLoop(myIO) {
 
         // init enemies
         addEnemy(5);
-        io.emit('enemies', enemies);
 
         Object.keys(players).forEach(function(p) {
             if(enemies.length < enemyVars.maxNum) {
@@ -366,9 +366,11 @@ function startGameLoop(myIO) {
                 enemyVars.reduceTo += 5;
             }
         });
+        io.emit('enemies', enemies);
 
         // init flakes
         addFlake(20);
+        sendThinFlakes();
 
         gameloop();
     }
@@ -377,7 +379,7 @@ function startGameLoop(myIO) {
 function stopGameLoop(isReset) {
     isStarted = false;
     enemies = [];
-    flakes = {list:[]};
+    flakes = [];
 
     // TODO: reset players (score + location)
     Object.keys(players).forEach(function(p) {
@@ -389,7 +391,7 @@ function stopGameLoop(isReset) {
     });
     io.emit('players', players);
     io.emit('enemies', enemies);
-    io.emit('flakes', thinFlakes());
+    sendThinFlakes();
 
     if(typeof isReset !== 'undefined' && isReset) {
         setTimeout(function() {
@@ -407,13 +409,12 @@ function collision() {
     var rightNow = Date.now();
 
     // enemies
-    let enemiesUpdated = false;
     for(var e = 0; e < enemies.length; e++) {
         var ce = enemies[e];
         if(ce.delay > 0) {
             ce.delay--;
             if(ce.delay == 0) {
-                enemiesUpdated = true;
+                sendSingleEnemy(e);
             }
         }else {
             // move enemy
@@ -422,7 +423,6 @@ function collision() {
             if((ce.speed > 0 && ce.x - ce.sizeX > stageVars.width) ||
                 (ce.speed < 0 && ce.x + ce.sizeX < 0)) {
                     addEnemy(1, e);
-                    enemiesUpdated = true
                     continue;
             }
             // if collision with enemy
@@ -453,8 +453,10 @@ function collision() {
                         }
                         players[p].score += enemyVars.points;
                         addEnemy(1, e);
-                        enemiesUpdated = true
+
                         addFishFlake(p, false);
+                        sendThinPlayerScore(p);
+
                         checkWinCondition(p);
                     // enemy is larger - deduct points, reset position, broadcast
                     }else {
@@ -466,14 +468,6 @@ function collision() {
                             playerDeathReset(p, ce.name, ce.sizeX, rightNow);
                         }
                     }
-
-                    var thinPlayerScore = {
-                        id: p,
-                        sizeX: players[p].sizeX,
-                        sizeY: players[p].sizeY,
-                        score: players[p].score
-                    };
-                    io.emit('playerScore', thinPlayerScore);
                 }
             });
 
@@ -496,36 +490,30 @@ function collision() {
             */
         }
     }//for enemies
-    if(enemiesUpdated) {
-        io.emit('enemies', enemies);
-    }
-
 
     // flakes
-    let flakesUpdated = false;
-    for(var f = 0; f < flakes.list.length; f++) {
-        var cf = flakes.list[f];
+    for(var f = 0; f < flakes.length; f++) {
+        var cf = flakes[f];
         if(cf.delay > 0) {
             cf.delay--;
             if(cf.delay == 0) {
-                flakesUpdated = true;
+                sendSingleFlake(f);
             }
         }else {
-            // move enemt
-            cf.y += cf.speed;
+            // move flake
+            cf.y += flakeVars.speed;
             // if OOB
             if(cf.y > stageVars.height) {
                 addFlake(1, f);
-                flakesUpdated = true;
+                sendSingleFlake(f);
                 continue;
             }
             // if collision with enemy
-            //for(int p = 0; p < Object.keys(players).length; p++) {
             Object.keys(players).forEach(function(p) {
-                if(typeof flakes.list[f] === 'undefined') {
+                if(typeof flakes[f] === 'undefined') {
                     return;
                 }
-                if(players[p].team === flakes.list[f].type) {
+                if(players[p].team === flakes[f].type) {
                     return;
                 }
                 if(players[p].team !== 'clam' && (players[p].sizeY >= flakeVars.flakeMaxSizeY || players[p].sizeX >= flakeVars.flakeMaxSizeX)) {
@@ -538,30 +526,25 @@ function collision() {
                             players[p].sizeX++;
                             players[p].sizeY = Math.floor(players[p].sizeX * playerVars[players[p].team].scale);
                         }
-                        players[p].score += flakes.list[f].points;
+                        players[p].score += flakes[f].points;
 
+                        // send flakes
                         addFlake(1, f);
-                        flakesUpdated = true;
-                        var thinPlayerScore = {
-                            id: p,
-                            sizeX: players[p].sizeX,
-                            sizeY: players[p].sizeY,
-                            score: players[p].score
-                        };
-                        io.emit('playerScore', thinPlayerScore);
+                        sendSingleFlake(f);
+
+                        sendThinPlayerScore(p);
                         checkWinCondition(p);
+                        return;
                 }
             });
         }
-    }//for
-    if(flakesUpdated) {
-        io.emit('flakes', thinFlakes());
-    }
+    }//for flakes
 }//collision
 
 function playerDeathReset(playerId, killerName, killerSize, rightNowTime) {
     players[playerId].x = Math.floor(stageVars.width/2 - (players[playerId].sizeX/2));
-    players[playerId].y = stageVars.height - players[playerId].sizeY - 10;
+    //players[playerId].y = stageVars.height - players[playerId].sizeY - 10;
+    players[playerId].y = playerVars[players[playerId].team].spawnTop - players[playerId].sizeY;
     players[playerId].lastCollision = rightNowTime;
     players[playerId].score -= enemyVars.points;
     // player death time + collision wait = client to show invulnerable animation
@@ -574,11 +557,11 @@ function playerDeathReset(playerId, killerName, killerSize, rightNowTime) {
         diedAt: players[playerId].diedAt
     };
     addMovement(playerId, thinPlayerMove);
-    //io.emit('playerMoved', thinPlayerMove);
 
     var resp = {};
     resp.id = playerId;
     resp.message = players[playerId].name + '[' + (players[playerId].team === 'jelly' ? players[playerId].sizeY : players[playerId].sizeX) + '] was eaten by ' + killerName + '[' + killerSize + ']';
+    resp.score = players[playerId].score;
     io.emit('playerDeath', resp);
 }//playerDeathReset
 
@@ -607,7 +590,6 @@ function gameloop() {
 }
 
 function addMovement(id, data) {
-    //console.log(JSON.stringify(data));
     if(movementQueue[id] === undefined) {
         movementQueue[id] = {};
     }
@@ -618,28 +600,11 @@ function addMovement(id, data) {
         movementQueue[id].diedAt = data.diedAt;
     }
 }
-
 function movement() {
     if(Object.keys(movementQueue).length > 0) {
         io.emit('playersMoved', movementQueue);
         movementQueue = {};
     }
-}
-
-function thinFlakes() {
-    var tf = {
-        list: [],
-        speed: flakeVars.speed
-    };
-    flakes.list.forEach(function(f) {
-        tf.list.push({
-            x: f.x,
-            y: f.y,
-            size: f.sizeX,
-            delay: f.delay
-        });
-    });
-    return tf;
 }
 
 function addFishFlake(id, reduceSize) {
@@ -649,19 +614,13 @@ function addFishFlake(id, reduceSize) {
             y: players[id].y + (players[id].sizeY / 2)
         };
         addFlake(1, undefined, location);
-        io.emit('flakes', thinFlakes());
+        sendThinFlakes();
 
         if(typeof reduceSize !== 'undefined' && reduceSize) {
             players[id].sizeX--;
             players[id].sizeY = Math.floor(players[id].sizeX * playerVars[players[id].team].scale);
             
-            var thinPlayerScore = {
-                id: id,
-                sizeX: players[id].sizeX,
-                sizeY: players[id].sizeY,
-                score: players[id].score
-            };
-            io.emit('playerScore', thinPlayerScore);
+            sendThinPlayerScore(id);
         }
     }
 }
@@ -690,6 +649,50 @@ function roundOver(now) {
         }
     }
 }
+
+
+//#region send socket events
+function sendSingleEnemy(index) {
+    io.emit('enemy', {
+        id: index,
+        enemy: enemies[index]
+    });
+}
+function sendThinFlakes() {
+    var tf = [];
+    flakes.forEach(function(f) {
+        tf.push({
+            x: f.x,
+            y: f.y,
+            size: f.sizeX,
+            delay: f.delay
+        });
+    });
+    io.emit('flakes', tf);
+}
+function sendSingleFlake(index) {
+    // TODO: investigate race condition
+    if(typeof flakes[index] !== "undefined") {
+        io.emit('flake', {
+            id: index,
+            flake: {
+                x: flakes[index].x,
+                y: flakes[index].y,
+                size: flakes[index].sizeX,
+                delay: flakes[index].delay
+            }
+        });
+    }
+}
+function sendThinPlayerScore(index) {
+    io.emit('playerScore', {
+        id: index,
+        sizeX: players[index].sizeX,
+        sizeY: players[index].sizeY,
+        score: players[index].score
+    });
+}
+//#endregion
 
 module.exports = {
     players,

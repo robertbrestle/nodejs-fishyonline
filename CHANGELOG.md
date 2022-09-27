@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
   
 ## [Unreleased]  
 
+## [0.1.3] - 2022-09-26
+### Changed  
+- refactored flakes to match enemies operations  
+- players now spawn at the top of their `spawnTop`  
+  - the top 90px of the screen is now a safe zone  
+- set max enemies to 35  
+- updated socket.io to version 4.5.2  
+
+### Fixed  
+- server spamming `playerScore` events when player intersects larger enemy  
+- send score with `playerDeath` event  
+- if multiple people disconnect, `removePlayer()` could remove all enemies from the game (again)  
+
 ## [0.1.2] - 2022-08-13  
 ### Added  
 - ping display  

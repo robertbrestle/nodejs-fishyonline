@@ -21,14 +21,15 @@ A running list of notes for any future changes. Nothing in this file is guarante
 - adjust momentum based on size
   - larger = slower to stop
   - smaller = faster to stop
-- players spawn at the top of the screen
+- players spawn at the top of the screen [added in 0.1.3]
   - "drop in"
   - clams and jelly polyps sink to the bottom
 - if crab launches off the ground into the water, they lose control and slowly drift back down
+- send configurations on `registration` event to set client globals
 
 ## Enemies
 - new art for fish
-  - updated jelly sprites [0.1.2]
+  - updated jelly sprites [added in 0.1.2]
   - more colors?
 - swarms of fish
   - a densely-packed cluster of fish

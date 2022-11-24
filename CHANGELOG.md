@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
   
 ## [Unreleased]  
 
+## [0.1.4] - 2022-11-23
+### Fixed
+- updated dependencies to update nested engine.io package to 6.2.1  
+
 ## [0.1.3] - 2022-09-26
 ### Changed  
 - refactored flakes to match enemies operations  

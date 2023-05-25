@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
   
 ## [Unreleased]  
 
+## [0.1.5] - 2023-05-25
+### Fixed
+- updated socket.io to 4.6.1  
+
 ## [0.1.4] - 2022-11-23
 ### Fixed
 - updated dependencies to update nested engine.io package to 6.2.1  
